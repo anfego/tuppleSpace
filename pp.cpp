@@ -16,8 +16,11 @@ Desciption:
 
 
 */
+#include <vector>          // stack
+#include <utility>
+#include <pthread.h>
+#include <iostream>
 #include <stack>
-
 
 #include "pp.h"
 
@@ -37,7 +40,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	// get user types
 	if(am_server_flag)
 	{
-
+		vector<int> uTypes;
 		// create stack for user types 
 		for (int i = 0; i < num_user_types; ++i)
 		{
