@@ -51,14 +51,27 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		printf("I am a server %d\n",*am_server_flag);
 		vector<int> uTypes;
 		// create stack for user types 
+		int done = 0;
+		int mpi_flag = 0;
+		int mpi_status = 0;
 		for (int i = 0; i < num_user_types; ++i)
 		{
+		}
+		while(!done)
+		{
+			MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_flag,&mpi_status);
+			if (mpi_flag == 1)		// if true there is a message, PP_Finalize
+				{
+					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_status)
+				}	
 		}
 	}
 	return PP_SUCCESS;	
 }
 int PP_Finalize()
 {
+	
+	;
 	return PP_SUCCESS;
 }
 int PP_Put()
