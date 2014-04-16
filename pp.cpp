@@ -21,6 +21,7 @@ Desciption:
 #include <pthread.h>
 #include <iostream>
 #include <stack>
+#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
 #include "pp.h"
 
@@ -37,14 +38,21 @@ using namespace std;
 	</sumary>*/
 int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
+	MPI_Comm comm_world_dup;
+	MPI_Comm_dup(MPI_COMM_WORLD, &comm_world_dup);
+
 	// get user types
-	if(am_server_flag)
+	if(*am_server_flag == 0)
 	{
+		return PP_SUCCESS;
+	}
+	else
+	{
+		printf("I am a server %d\n",*am_server_flag);
 		vector<int> uTypes;
 		// create stack for user types 
 		for (int i = 0; i < num_user_types; ++i)
 		{
-			/* code */
 		}
 	}
 	return PP_SUCCESS;	

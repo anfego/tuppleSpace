@@ -3,6 +3,9 @@
 #include <stdarg.h>
 #include <string.h>
 
+
+#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
+
 #include "pp.h"
 
 #define WORK            1
@@ -56,11 +59,23 @@ int main(int argc, char *argv[])
             exit(-1);
         }
     }
-    int temp;
-    am_server_flag = 0;
+    rc = MPI_Init(NULL,NULL);
+    rc = MPI_Comm_rank(MPI_COMM_WORLD,&my_world_rank);
+    rc = MPI_Comm_size(MPI_COMM_WORLD,&num_world_ranks);
+  
+    if (my_world_rank >= (num_world_ranks-num_servers))
+        {
+            printf("nservers = %d\n",num_servers);
+            am_server_flag = 1;
+        }
+    else
+        am_server_flag = 0;
+  
+    
+    
     rc = PP_Init(num_user_types,user_types,&am_server_flag);  // servers stay until end
-    rc = temp;
-    printf("TEMP: %d\n", temp);
+    
+    
 
 
     return 0;
