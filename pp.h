@@ -9,7 +9,7 @@
 #define PP_NO_MORE_WORK 4
 #define PP_HANDLE_SIZE  6
 
-int PP_Init(int num_user_types, int user_types, int * am_server_flag);
+int PP_Init(int num_user_types, int * user_types, int * am_server_flag);
 int PP_Finalize();
 
 int PP_Put();

@@ -16,9 +16,13 @@ Desciption:
 
 
 */
+#include <stack>
+
 
 #include "pp.h"
 
+
+using namespace std;
 /*<sumary>
     int num_user_types;
     Any valid integer can be a user type.
@@ -28,41 +32,18 @@ Desciption:
     Discussion:
 	The user should do MPI_Init and MPI_Finalize.
 	</sumary>*/
-int PP_Init(int num_user_types, int user_types, int * am_server_flag)
+int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
-
-	while(not end)
+	// get user types
+	if(am_server_flag)
 	{
-		if (connection)
+
+		// create stack for user types 
+		for (int i = 0; i < num_user_types; ++i)
 		{
-			check type 
-			if(SET)
-			{
-				try to allocate memory
-				if(successfull)
-					send "OK"
-				else //malloc returned 0
-					send "No Space"
-			}
-			if(GET)
-			{
-				check whether it exists in local machine
-				if(found)
-					send
-				else
-				{
-					broadcast in server scope request for a information and start waiting for all responces
-					if(all not found)
-						send "NOT FOUND"
-					else
-						send a rank of server that has information
-						OR
-						get information from the server and transmit to APP
-				}
-			}
+			/* code */
 		}
 	}
-
 	return PP_SUCCESS;	
 }
 int PP_Finalize()
