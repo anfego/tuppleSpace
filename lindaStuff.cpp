@@ -52,9 +52,10 @@ int lindaStuff::put(int type, int size)
 	return 0;
 }
 
-void * lindaStuff::get(int type)
+void * lindaStuff::get(int type[])
 {
-	if(any_types) //then just take first one
+
+	if(type[0] == 0) //then just take first one
 	{
 		if(myNodes.size() != 0)
 		{	
@@ -64,9 +65,9 @@ void * lindaStuff::get(int type)
 		}
 	}
 	else
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (int i = 1; i < type[0]; ++i)
 	{
-		if( (myNodes[i]).type == type)
+		if( (myNodes[i]).type == type[i])
 		{
 			void* ptr = (myNodes[i]).memory;
 			myNodes[i].erase();//note thgat memory is still allocated
