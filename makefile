@@ -14,8 +14,8 @@ all: libpp.a pstest1.e
 
 testing: libpp.a mytest.e
 
-libpp.a: pp.o
-	ar $(AFLAGS) libpp.a pp.o
+libpp.a: pp.o lindaStuff.o
+	ar $(AFLAGS) libpp.a pp.o lindaStuff.o
 
 pstest1.e:	pstest1.o libpp.a
 	$(MPICC) pstest1.o libpp.a -o pstest1.e

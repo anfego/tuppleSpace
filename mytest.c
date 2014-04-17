@@ -74,7 +74,8 @@ int main(int argc, char *argv[])
     
     
     rc = PP_Init(num_user_types,user_types,&am_server_flag);  // servers stay until end
-    
+    PP_Finalize();
+    printf("DONE\n");
     
 
 

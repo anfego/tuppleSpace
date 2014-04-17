@@ -27,6 +27,12 @@ Desciption:
 #include "lindaStuff.h"
 
 using namespace std;
+
+
+/*<sumary>
+	</sumary>*/
+lindaStuff lindaSpace;
+
 /*<sumary>
     int num_user_types;
     Any valid integer can be a user type.
@@ -38,62 +44,99 @@ using namespace std;
 	</sumary>*/
 int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
-	MPI_Comm comm_world_dup;
-	MPI_Comm_dup(MPI_COMM_WORLD, &comm_world_dup);
+	int server = *am_server_flag;
+	MPI_Comm comm_servers, comm_world_dup;
+	
+	MPI_Comm_dup(MPI_COMM_WORLD, &(lindaSpace.INTER_COMM));
+	
+	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&(lindaSpace.LINDA_COMM));
+
+	// lindaStuff lindaSpace(comm_world_dup, comm_servers, server);
 
 	// get user types
-	if(*am_server_flag == 0)
+	if(server == 1)
 	{
 		return PP_SUCCESS;
 	}
-	else
+	lindaSpace.set_as_server();
+	printf("I am a server %d\n", lindaSpace.am_i_server());
+	vector<int> uTypes;
+	// create stack for user types 
+	int done = 0;
+	int mpi_flag = 0;
+	MPI_Status status;
+	for (int i = 0; i < num_user_types; ++i)
 	{
-		printf("I am a server %d\n",*am_server_flag);
-		vector<int> uTypes;
-		// create stack for user types 
-		int done = 0;
-		int mpi_flag = 0;
-		MPI_Status status;
-		for (int i = 0; i < num_user_types; ++i)
-		{
-		}
-		while(!done)
-		{
-			MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_flag,&status);
-			if (mpi_flag == 1)		// if true there is a message, PP_Finalize
-				{
-					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&status);
-					printf("Server Exit\n");
-				}
-		}
 	}
+	
+	while(!done)
+	{
+		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
+		if (mpi_flag == 1)		// if true there is a message, PP_Finalize
+			{
+				printf("Server DONE :  %d\n",done);
+				MPI_Recv(&done, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, lindaSpace.INTER_COMM, &status);
+			}
+	}
+	printf("Server Exit\n");
+
 	return PP_SUCCESS;	
 }
+/*<sumary>
+	</sumary>*/
+
 int PP_Finalize()
 {
-	MPI_Comm comm_linda;
+	MPI_Comm comm_inter;
+	lindaSpace.get_comm_inter(&comm_inter);
 	//Send "To finish" signal
 	int finish = 1;
-
-	MPI_Send(&finish,1,MPI_INT,3,MPI_ANY_TAG,comm_linda);
+	int my_inter_rank;
+	MPI_Barrier(lindaSpace.LINDA_COMM);
+	if(lindaSpace.am_i_server() == false)
+	{
+		MPI_Comm_rank(lindaSpace.INTER_COMM,&my_inter_rank);
+		printf("my_inter_rank: %d\n",my_inter_rank);
+		if(my_inter_rank == 1)
+		{
+			printf("END servers!\n");
+			MPI_Send(&finish,1, MPI_INT, 0, MPI_ANY_TAG, lindaSpace.INTER_COMM);
+		}
+	}	
+	MPI_Barrier(lindaSpace.INTER_COMM);
 	return PP_SUCCESS;
 }
+/*<sumary>
+	</sumary>*/
+
 int PP_Put()
 {
 	return PP_SUCCESS;
 }
+/*<sumary>
+	</sumary>*/
+
 int PP_Reserve()
 {
 	return PP_SUCCESS;
 }
+/*<sumary>
+	</sumary>*/
+
 int PP_Get()
 {
 	return PP_SUCCESS;
 }
+/*<sumary>
+	</sumary>*/
+
 int PP_Set_problem_done()
 {
 	return PP_SUCCESS;
 }
+/*<sumary>
+	</sumary>*/
+
 int PP_Abort()
 {
 	return PP_SUCCESS;

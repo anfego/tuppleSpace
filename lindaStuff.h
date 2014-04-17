@@ -11,19 +11,28 @@ private:
 	bool reserved;
 	int reserved_by;
 	int data;
-	MPI_Comm LINDA_COMM;
 	
 	// Methods
-	int set_linda_comm(const MPI_Comm comm_world);
 
 public:
 	// Default constructor
+	int server;
+	MPI_Comm LINDA_COMM;
+	MPI_Comm INTER_COMM;
 	lindaStuff();
 	// Constructor
-	lindaStuff(const MPI_Comm comm_world);
+	lindaStuff(const MPI_Comm comm_world, const MPI_Comm comm_inter, int am_server);
+	// Destructor
 	~lindaStuff();
+	int set_linda_comm(const MPI_Comm comm_world, const MPI_Comm comm_inter);
 	int getType();
 	bool isReserved();
+	int get_comm_inter(MPI_Comm *comm_in);
+	int get_comm_linda(MPI_Comm *comm_in);
+	int am_i_server();
+	void set_as_server();
+
+
 	
 	
 
