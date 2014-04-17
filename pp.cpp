@@ -21,8 +21,8 @@ Desciption:
 #include <pthread.h>
 #include <iostream>
 #include <stack>
-#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
+#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 #include "pp.h"
 #include "lindaStuff.h"
 
@@ -53,16 +53,16 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		// create stack for user types 
 		int done = 0;
 		int mpi_flag = 0;
-		int mpi_status = 0;
+		MPI_Status status;
 		for (int i = 0; i < num_user_types; ++i)
 		{
 		}
 		while(!done)
 		{
-			MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_flag,&mpi_status);
+			MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_flag,&status);
 			if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 				{
-					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_status)
+					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&status);
 				}	
 		}
 	}
@@ -74,7 +74,7 @@ int PP_Finalize()
 	//Send "To finish" signal
 	int finish = 1;
 
-	MPI_Send((void *)&finish,1,MPI_INT,3,comm_linda);
+	MPI_Send(&finish,1,MPI_INT,3,MPI_ANY_TAG,comm_linda);
 	return PP_SUCCESS;
 }
 int PP_Put()

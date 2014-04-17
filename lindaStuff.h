@@ -21,14 +21,12 @@ public:
 	lindaStuff();
 	// Constructor
 	lindaStuff(const MPI_Comm comm_world);
-
-	lindaStuff();
 	~lindaStuff();
 	int getType();
 	bool isReserved();
-	int getType();
-	int getType();
+	
+	
 
 	/* data */
-} lindaSpace;
+};
 #endif
