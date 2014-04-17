@@ -46,13 +46,21 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
 	int server = *am_server_flag;
 	int my_inter_rank;
-	MPI_Comm comm_servers, comm_world_dup;
-	
-	MPI_Comm_dup(MPI_COMM_WORLD, &(lindaSpace.INTER_COMM));
-	
-	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&(lindaSpace.LINDA_COMM));
 
-	MPI_Comm_rank(lindaSpace.INTER_COMM,&my_inter_rank);
+	
+	MPI_Comm_dup(MPI_COMM_WORLD, &(lindaSpace.WORLD_COMM_DUP));
+	
+	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&(lindaSpace.MY_SIDE_COMM));
+
+	MPI_Intercomm_create(
+		lindaSpace.MY_SIDE_COMM,
+		0,
+		lindaSpace.WORLD_COMM_DUP,
+		0,
+		666,
+		&(lindaSpace.INTER_COMM));
+
+	MPI_Comm_rank(lindaSpace.WORLD_COMM_DUP,&my_inter_rank);
 	// lindaStuff lindaSpace(comm_world_dup, comm_servers, server);
 	printf("my_inter_rank: %d\n",my_inter_rank);
 	// get user types
@@ -73,11 +81,11 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	
 	while(!done)
 	{
-		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
+		MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG, lindaSpace.WORLD_COMM_DUP, &mpi_flag, &status);
 		if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 			{
 				printf("Server DONE :  %d\n",done);
-				MPI_Recv(&done, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, lindaSpace.INTER_COMM, &status);
+				MPI_Recv(&done, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, lindaSpace.WORLD_COMM_DUP, &status);
 			}
 	}
 	printf("Server Exit\n");
@@ -96,29 +104,29 @@ int PP_Finalize()
 	int my_inter_rank;
 
 	// wait until all app's get until this point
-	MPI_Barrier(lindaSpace.LINDA_COMM);
+	MPI_Barrier(lindaSpace.MY_SIDE_COMM);
 	if(lindaSpace.am_i_server() == false)
 	{
-		MPI_Comm_rank(lindaSpace.LINDA_COMM,&my_side_rank);
+		MPI_Comm_rank(lindaSpace.MY_SIDE_COMM,&my_side_rank);
 		printf("my_app_rank: %d\n",my_side_rank);
-		MPI_Comm_rank(lindaSpace.INTER_COMM,&my_inter_rank);
+		MPI_Comm_rank(lindaSpace.WORLD_COMM_DUP,&my_inter_rank);
 		printf("PP_Finalize: my_inter_rank: %d\n",my_inter_rank);
-		MPI_Bcast(&done,1, MPI_INT, my_inter_rank, lindaSpace.INTER_COMM);
+		MPI_Bcast(&done,1, MPI_INT, my_inter_rank, lindaSpace.WORLD_COMM_DUP);
 		if(my_side_rank == 0) 			// if Im rank 0 in app side do Bcast 
 		{
 			printf("END servers!\n");
-			// MPI_Send(&done,1, MPI_INT, 0, MPI_ANY_TAG, lindaSpace.INTER_COMM);
+			// MPI_Send(&done,1, MPI_INT, 0, MPI_ANY_TAG, lindaSpace.WORLD_COMM_DUP);
 		}
 		else
 		{
 			done = 0;		// waits until rank 0 on app side send the "done" signal
 			printf("wait for signal app side\n");
-			MPI_Recv(&done, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, lindaSpace.INTER_COMM, &status);
+			MPI_Recv(&done, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, lindaSpace.WORLD_COMM_DUP, &status);
 
 		}
 	}	
 	printf("Im out: %d\n",my_inter_rank);
-	// MPI_Barrier(lindaSpace.INTER_COMM);
+	// MPI_Barrier(lindaSpace.WORLD_COMM_DUP);
 	return PP_SUCCESS;
 }
 /*<sumary>
