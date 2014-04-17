@@ -54,7 +54,16 @@ int put(int type, int size)
 
 void * get(int type)
 {
-	node tempNode;
+	if(any_types) //then just take first one
+	{
+		if(myNodes.size() != 0)
+		{	
+			void* ptr = (myNodes[0]).memory;
+			myNodes[i].erase();//note thgat memory is still allocated
+			return ptr;
+		}
+	}
+	else
 	for (int i = 0; i < myNodes.size(); ++i)
 	{
 		if( (myNodes[i]).type == type)
@@ -64,6 +73,8 @@ void * get(int type)
 			return ptr;
 		}
 	}
+
+
 	return NULL;
 }
 
