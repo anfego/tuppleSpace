@@ -10,6 +10,8 @@
 #define PP_HANDLE_SIZE  6
 #define PP_FINALIZE_TAG	66
 
+MPI_Comm newcomm;
+
 int PP_Init(int num_user_types, int * user_types, int * am_server_flag);
 int PP_Finalize();
 

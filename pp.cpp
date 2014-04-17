@@ -39,8 +39,9 @@ using namespace std;
 int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
 	MPI_Comm comm_world_dup;
+	MPI_Comm newcomm;
 	MPI_Comm_dup(MPI_COMM_WORLD, &comm_world_dup);
-
+	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, int 0,&newcomm);
 	// get user types
 	if(*am_server_flag == 0)
 	{
@@ -59,10 +60,10 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		}
 		while(!done)
 		{
-			MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_flag,&mpi_status);
+			MPI_Iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,newcomm,&mpi_flag,&mpi_status);
 			if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 				{
-					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&mpi_status)
+					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,newcomm,&mpi_status)
 				}	
 		}
 	}
