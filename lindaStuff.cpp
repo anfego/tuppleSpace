@@ -13,7 +13,7 @@ lindaStuff(arguments)
 {
 	
 }
-void setType(int type)
+void lindaStuff::setType(int type)
 {//myPerm is vector of vectors
 	if(type != 0)
 	{	
@@ -38,7 +38,7 @@ void setType(int type)
 }
 
 
-int put(int type, int size)
+int lindaStuff::put(int type, int size)
 {
 	node tempNode;
 	tempNode.type = type;
@@ -52,7 +52,7 @@ int put(int type, int size)
 	return 0;
 }
 
-void * get(int type)
+void * lindaStuff::get(int type)
 {
 	if(any_types) //then just take first one
 	{
