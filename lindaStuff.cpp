@@ -1,4 +1,3 @@
-
 #include "lindaStuff.h"
 
 using namespace lindaStuff;
@@ -15,18 +14,19 @@ lindaStuff(arguments)
 }
 void lindaStuff::setType(int type)
 {//myPerm is vector of vectors
-	if(type != 0)
+if(type != 0)
 	{	
 		myTypes.push_back(type);
-
-		myPerm.push_back(type);
-		oldSize = myPerm.size();
+		vector<int> temp;
+		temp.push_back(type);
+		myPerm.push_back(temp);
+		int oldSize = myPerm.size();
 		for(int i=0; i < oldSize - 1; ++i)
 		{
 			myPerm.push_back(myPerm[i]);//copy all existing vectors
 		}
-	
-		newSize = myPerm.size();
+
+		int newSize = myPerm.size();
 		//start right after pure new element and add new element to all copied before
 		for(int i=oldSize; i < newSize; ++i)
 		{
