@@ -39,9 +39,9 @@ using namespace std;
 int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
 	MPI_Comm comm_world_dup;
-	MPI_Comm newcomm;
+	
 	MPI_Comm_dup(MPI_COMM_WORLD, &comm_world_dup);
-	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, int 0,&newcomm);
+	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&newcomm);
 	// get user types
 	if(*am_server_flag == 0)
 	{
@@ -50,8 +50,34 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	else
 	{
 		printf("I am a server %d\n",*am_server_flag);
-		vector<int> uTypes;
+		// vector<int> uTypes;
+		// vector < pair<int, vector<int> >> myTypes;
+		// instanceOfLindaStuff.makePermutations(myTypes);
 		// create stack for user types 
+		int myrank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+		
+		if(!*am_server_flag)
+		{
+
+			if(myrank != MASTER_RANK)
+			{//store only WORK
+				for(int i=1; i<user_types.length - 1; ++i)
+				{
+					setType(user_types[i]);
+				}
+			}
+			else
+			{//store both WORK and ANSWER
+				for(int i=0; i<user_types.length; ++i)
+				{
+					setType(user_types[i]);
+				}
+			}
+
+			}
+		}
+
 		int done = 0;
 		int mpi_flag = 0;
 		int mpi_status = 0;
