@@ -24,7 +24,7 @@ Desciption:
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
 #include "pp.h"
-
+#include "lindaStuff.h"
 
 using namespace std;
 /*<sumary>
@@ -70,8 +70,11 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 }
 int PP_Finalize()
 {
-	
-	;
+	MPI_Comm comm_linda;
+	//Send "To finish" signal
+	int finish = 1;
+
+	MPI_Send((void *)&finish,1,MPI_INT,3,comm_linda);
 	return PP_SUCCESS;
 }
 int PP_Put()
