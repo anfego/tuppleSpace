@@ -63,7 +63,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 				{
 					MPI_Recv(&done,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,comm_world_dup,&status);
-				}	
+					printf("Server Exit\n");
+				}
 		}
 	}
 	return PP_SUCCESS;	
