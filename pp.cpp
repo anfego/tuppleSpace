@@ -46,6 +46,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
 	int server = *am_server_flag;
 	int my_inter_rank;
+	int inter_rank;
 	MPI_Comm comm_servers, comm_world_dup;
 	
 	MPI_Comm_dup(MPI_COMM_WORLD, &(lindaSpace.INTER_COMM));
@@ -53,10 +54,19 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&(lindaSpace.LINDA_COMM));
 
 	MPI_Comm_rank(lindaSpace.INTER_COMM,&my_inter_rank);
+	
+	/******Create new intercomm*******/
+	MPI_Intercomm_create( lindaSpace.LINDA_COMM/*should contatin local comm*/ , 0/*usually 0*/, MPI_COMM_WORLD/*peer*/, 0/*usually 0*/,  0/*int tag*/,  &lindaSpace.INTER_NEW/*new comm will be stored here*/ );	!
+	/******get rank*******/
+	printf("Creating intercomm in rank: %d\n",inter_rank);
+	
+	MPI_Comm_rank( lindaSpace.INTER_NEW, &inter_rank );
+	printf("my inter_rank ==>>: %d\n",inter_rank);
+
 	// lindaStuff lindaSpace(comm_world_dup, comm_servers, server);
 	printf("my_inter_rank: %d\n",my_inter_rank);
 	// get user types
-	if(server == 1)
+	if(!*am_server_flag)
 	{
 		return PP_SUCCESS;
 	}
@@ -69,6 +79,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	MPI_Status status;
 	for (int i = 0; i < num_user_types; ++i)
 	{
+		//insert_type(num_user_types[i]);//realized in Ivan1 // if zero would met, then special flag would be triggered in linda class
 	}
 	
 	while(!done)
@@ -93,6 +104,7 @@ int PP_Finalize()
 	//Send "To finish" signal
 	int done = 1;
 	int my_side_rank;
+	MPI_Comm newintercomm;
 	int my_inter_rank;
 
 	// wait until all app's get until this point
