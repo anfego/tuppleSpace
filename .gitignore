@@ -23,4 +23,5 @@
 
 
 # sublime project
-*.sublime
+*.sublime-project
+*.sublime-workspace

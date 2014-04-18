@@ -111,8 +111,6 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		{
 			MPI_Recv(&done, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 		}
-
-
 	}
 	printf("tuppleSpace Exit\n");
 

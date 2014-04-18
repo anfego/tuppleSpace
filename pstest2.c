@@ -6,8 +6,7 @@
 #include "mpi.h"
 #include "pp.h"
 
-#define WORK             1
-#define ANSWER           2
+#define ANSWER           999999
 
 #define MASTER_RANK 0
 
@@ -33,12 +32,12 @@ int main(int argc, char *argv[])
     int rc, i, done, num_servers, work_unit_size, am_server_flag;
     int num_world_ranks, num_work_units, num_answers;
     int work_type, work_handle[PP_HANDLE_SIZE], work_len;
-    int num_handled_by_me;
+    int num_handled_by_me, num_app_ranks, next_rank, prev_rank;
     // int num_user_types, user_types[PP_MAX_USER_TYPES];
   
-    int req_types[2];
-    int num_user_types = 2;
-    int user_types[2] = {WORK,ANSWER};
+    int req_types[128];
+    int num_user_types;
+    int user_types[128];
 
     char *work_unit_buf;
 
@@ -54,6 +53,7 @@ int main(int argc, char *argv[])
     total_get_time  = 0.0;
     total_reserve_time = 0.0;
     num_handled_by_me = 0;
+    num_answers = 0;
 
     for (i=1; i < argc; i++)  /* start at 1 */
     {        
@@ -77,6 +77,11 @@ int main(int argc, char *argv[])
     rc = MPI_Init(NULL,NULL);
     rc = MPI_Comm_rank(MPI_COMM_WORLD,&my_world_rank);
     rc = MPI_Comm_size(MPI_COMM_WORLD,&num_world_ranks);
+
+    num_app_ranks = num_world_ranks - num_servers;
+    num_user_types = num_app_ranks;
+    for (i=0; i < num_app_ranks; i++)
+        user_types[i] = i;
   
     if (my_world_rank >= (num_world_ranks-num_servers))
         am_server_flag = 1;
@@ -93,31 +98,43 @@ int main(int argc, char *argv[])
     start_job_time = MPI_Wtime();
     end_work_time  = MPI_Wtime();  /* dummy val until set below */
   
-    if ( my_world_rank == MASTER_RANK )
+    if (my_world_rank == (num_app_ranks-1))
+        next_rank = 0;
+    else
+        next_rank = my_world_rank + 1;
+    if (my_world_rank == 0)
+        prev_rank = num_app_ranks - 1;
+    else
+        prev_rank = my_world_rank - 1;
+    for (i=0; i < num_work_units; i++)
     {
-        num_answers = 0;
-        for (i=0; i < num_work_units; i++)
+        memset(work_unit_buf,'X',work_unit_size);
+        if (work_unit_size >= 25)
+            sprintf(work_unit_buf,"workunit %d  by %d\n",i);
+        rc = PP_Put( work_unit_buf, work_unit_size, my_world_rank, -1 ); // type==myrank
+        if (rc != PP_SUCCESS)
         {
-            memset(work_unit_buf,'X',work_unit_size);
-            if (work_unit_size >= 18)
-                sprintf(work_unit_buf,"workunit %d",i);
-            rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1 ); 
-            if (rc != PP_SUCCESS)
-            {
-                dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );
-                PP_Abort(-1);
-            }
+            dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );
+            PP_Abort(-1);
         }
-        dbgprintf(1,"all work submitted after %f secs\n",MPI_Wtime()-start_job_time);
     }
+    dbgprintf(1,"all work submitted after %f secs\n",MPI_Wtime()-start_job_time);
     end_put_time = start_work_time = MPI_Wtime();
   
     done = 0;
     while ( !done )
     {
-        req_types[0] = -1;  /* not really used below */
-        temptime = MPI_Wtime();
-        rc = PP_Reserve(0,NULL,&work_len,&work_type,work_handle);
+        if (my_world_rank == MASTER_RANK)
+        {
+            req_types[0] = next_rank;
+            req_types[1] = ANSWER;
+            rc = PP_Reserve(2,req_types,&work_len,&work_type,work_handle);
+        }
+        else
+        {
+            req_types[0] = next_rank;
+            rc = PP_Reserve(1,req_types,&work_len,&work_type,work_handle);
+        }
         if ( rc == PP_EXHAUSTION )
         {
             dbgprintf( 1, "done by exhaustion\n" );
@@ -133,7 +150,13 @@ int main(int argc, char *argv[])
             dbgprintf( 1, "** reserve failed, rc = %d\n", rc );
             PP_Abort(-1);
         }
-        else if (work_type == WORK) 
+        else if ( work_type == ANSWER) 
+        {
+            num_answers++;
+            if (num_answers >= (num_app_ranks * num_work_units))
+		PP_Set_problem_done();
+        }
+        else
         {
             temptime = MPI_Wtime();
             rc = PP_Get( work_unit_buf, work_handle );
@@ -167,17 +190,11 @@ int main(int argc, char *argv[])
             }
             end_work_time = MPI_Wtime();  /* chgs on each work unit */
         }
-        else if ( work_type == ANSWER) 
-        {
-            num_answers++;
-            if (num_answers >= num_work_units)
-		PP_Set_problem_done();
-        }
-        else
-        {
-            dbgprintf( 1, "** unexpected work type %d\n", work_type );
-            PP_Abort( -1 );
-        }
+        // else
+        // {
+            // dbgprintf( 1, "** unexpected work type %d\n", work_type );
+            // PP_Abort( -1 );
+        // }
     }
     total_work_time = end_work_time - start_work_time;
     dbgprintf(1,"num handled by me %d\n",num_handled_by_me);
