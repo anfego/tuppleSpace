@@ -93,35 +93,28 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 
 	if(server == 0)
 	{
-		// printf("I am an APP %d\n", lindaSpace.am_i_server());
-
-		printf("App: %d  %d  %d \n",my_world_rank,my_side_rank,my_inter_rank);
 		return PP_SUCCESS;
 	}
-	// printf("I am a server %d\n", lindaSpace.am_i_server());
-	
-
-	printf("\tServer: %d  %d  %d other_side_size %d\n",my_world_rank,my_side_rank,my_inter_rank,other_side_size);
 
 	vector<int> uTypes;
 	// create stack for user types 
 	int done = 0;
 	int mpi_flag = 0;
 	MPI_Status status;
-	for (int i = 0; i < num_user_types; ++i)
-	{
-	}
+
 	
 	while(!done)
 	{
+		// checks if there is a "to finish"
 		MPI_Iprobe(lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &mpi_flag, &status);
 		if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 		{
-			printf("Server DONE :  %d\n",done);
 			MPI_Recv(&done, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 		}
+
+
 	}
-	printf("Server Exit\n");
+	printf("tuppleSpace Exit\n");
 
 	return PP_SUCCESS;	
 }
@@ -143,7 +136,6 @@ int PP_Finalize()
 		if(lindaSpace.my_side_rank == 0) 			// if Im rank 0 in app side do Bcast 
 		{
 			// Sends to every server a "to finish" signal
-			printf("END servers!\n");
 			for(int i = 0; i < lindaSpace.other_side_size; i++)
 			{
 				MPI_Send(&done,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
@@ -151,7 +143,7 @@ int PP_Finalize()
 		}
 
 	}	
-	printf("Im out: %d\n",my_inter_rank);
+	// printf("Im out: %d\n",my_inter_rank);
 	
 	MPI_Barrier(lindaSpace.WORLD_COMM_DUP);			//Wait for all processes hit this point
 
@@ -159,7 +151,10 @@ int PP_Finalize()
 	MPI_Comm_free(&(lindaSpace.INTER_COMM));
 	MPI_Comm_free(&(lindaSpace.MY_SIDE_COMM));
 	MPI_Comm_free(&(lindaSpace.WORLD_COMM_DUP));
-
+	if (lindaSpace.my_world_rank == 0)
+	{
+		printf("PP_Finalize = PP_SUCCESS\n");
+	}
 	return PP_SUCCESS;
 }
 /*<sumary>
