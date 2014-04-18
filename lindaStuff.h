@@ -18,9 +18,19 @@ public:
 	// Default constructor
 	int server;
 	
+	int my_world_rank;
+	int my_side_rank;
+
+	int world_size;
+	int my_side_size;
+	int other_side_size;
+
+	int other_side_leader;
+
 	MPI_Comm MY_SIDE_COMM;
 	MPI_Comm WORLD_COMM_DUP;
 	MPI_Comm INTER_COMM;
+
 
 	lindaStuff();
 	// Constructor
