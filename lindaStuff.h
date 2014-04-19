@@ -1,8 +1,12 @@
 #ifndef LINDASTUFF_H
 #define LINDASTUFF_H
 
+#include <stdlib.h>
+#include <string.h>
+#include <vector>
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
+using namespace std;
 
 class lindaStuff
 {
@@ -17,7 +21,9 @@ private:
 		int type;
 		bool reserved;
 		void* memory;
+		int size;
 	};
+	vector<node> myNodes;
 	
 	// Methods
 

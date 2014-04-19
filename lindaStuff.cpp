@@ -3,7 +3,7 @@
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
 
-
+using namespace std;
 
 	// Default ructor
 	lindaStuff::lindaStuff()
@@ -48,9 +48,9 @@
 
 	int lindaStuff::allocate(int &size, int &type)
 	{
-		int resp = malloc(size);
+		char *resp = (char *)malloc(size);
 		
-		if (resp != 0)//if no space
+		if (resp != NULL)//if no space
 		{
 			node tempNode;
 			tempNode.type = type;
@@ -62,7 +62,7 @@
 			
 			return myNodes.size() -1;//index
 		}
-		return PP_FAIL;
+		return -1;
 	}
 	void lindaStuff::store(void *work_unit_buf, int &index)
 	{
@@ -122,5 +122,5 @@
 	void lindaStuff::taker(int index, void * work_unit_buf)
 	{
 		memcpy(work_unit_buf, myNodes[index].memory, myNodes[index].size);
-		myNodes.erase(index);
+		myNodes.erase(myNodes.begin()+index);
 	}
