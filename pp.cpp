@@ -32,7 +32,6 @@ using namespace std;
 	{
 		int size;
 		int num_types;
-		vector<int> types;
 		int local_index;
 	}__attribute__ ((packed));
 
@@ -111,8 +110,9 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	int mpi_flag = 0;
 	pass_struct put_struct;
 	MPI_Status status;
-
-	
+	int temp_buf[2];
+	int reserve_buf[num_user_types+1];//+1because first is number of elements is array
+	int handle[4];
 	while(!done)
 	{
 		// checks if there is a "to finish"
@@ -123,29 +123,36 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		}
 		else if( mpi_flag == 2 )//received PUT
 		{
-			memset(put_struct, '\0', sizeof(put_struct) );
+			memset(temp_buf, '\0', sizeof(temp_buf) );
 			
-			MPI_Recv(&put_struct, 1, sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			MPI_Recv(&temp_buf, 1, sizeof(temp_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 			// if(type_rec == good rec) - receive
-			resp = allocate(put_struct.type, put_struct.size);
+			// resp is index in vector, never can be less than zero
+			resp = allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
 			MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
 			//get the data
 			if (resp != PP_FAIL)
 			{
-				MPI_Recv(&put_struct, 1, sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-				resp = store();
+				MPI_Recv(work_unit_buf, 1, work_unit_size, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+				//put in allocated space
+				store(work_unit_buf, resp);
+				//send success(index in array) or fail(-1) 
 				MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
 			}
 		}
 		else if( mpi_flag == 3)//received reserve
 		{
-			MPI_Recv(&type_rec, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			resp = reserver(int &num_types, int type[], int &size);
+			MPI_Recv(&reserve_buf, 1, sizeof(reserve_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			resp = reserver(int reserve_buf, int handle);
+			
+			MPI_Send(&handle,1, sizeof(handle), i, 666, lindaSpace.INTER_COMM);
+
 		}
-		else if( mpi_flag == 4)//received reserve
+		else if( mpi_flag == 4)//received get
 		{
 			MPI_Recv(&type_rec, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 			resp = reserver(int &num_types, int type[], int &size);
+			MPI_Send(&handle,1, sizeof(handle), i, 666, lindaSpace.INTER_COMM);
 		}
 	}
 	printf("tuppleSpace Exit\n");
@@ -198,10 +205,10 @@ int PP_Put(int type, int size, void * buffer )
 {
 	int picked_server = random()%other_side_size;
 	int resp = -1;
-	pass_struct temp_buf;
 
-	temp_buf.size = size;
-	temp_buf.types.push_back(type);
+	int temp_buf[2];
+	temp_buf[0] = size;
+	temp_buf[1] = type;
 
 	MPI_Send(&temp_buf,1, sizeof(temp_buf), picked_server, 666, lindaSpace.INTER_COMM);
 	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
@@ -221,15 +228,20 @@ int PP_Put(int type, int size, void * buffer )
 	</sumary>*/
 int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
 {
-	vector<int> types_vec;
-	int resp = -1;
+	int types_pass[num_types+1];
 	
-	for (int i = 0; i < num_types; ++i)
+	types_pass[0] = num_types;
+	if (num_types > 1)
 	{
-		types_vec.push_back(types[i]);
+		for (int i = 0; i < num_types; ++i)
+		{
+			types_pass[i+1] = types[i];
+		}
 	}
 
-	MPI_Send(&types_vec,1, sizeof(types_vec), picked_server, 666, lindaSpace.INTER_COMM);
+	MPI_Send(&types_pas,1, sizeof(types_pas), picked_server, 666, lindaSpace.INTER_COMM);
+	
+	int resp = -1;
 	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 	if(resp.ID != -1)
 	{
