@@ -154,7 +154,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		else if( mpi_flag == 4)//received get
 		{
 			MPI_Recv(&index, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			resp = lindaSpace.taker(index, work_unit_buf);
+			lindaSpace.taker(index, work_unit_buf);
 			MPI_Send(&work_unit_buf,1, sizeof(work_unit_buf), i, 666, lindaSpace.INTER_COMM);
 		}
 	}

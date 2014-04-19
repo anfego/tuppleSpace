@@ -46,29 +46,28 @@
 		server = 1;
 	}
 
-	int lindaStuff::store(int &type, int &size, void* work_unit_buf)
+	int lindaStuff::allocate(int &size, int &type)
 	{
-		int resp = malloc(tempNode.memory, size);
-		if (resp == 0)//if no space
+		int resp = malloc(size);
+		
+		if (resp != 0)//if no space
 		{
-			return PP_FAIL;
-		}
-		else
-		{
-			memcpy(resp, work_unit_buf, size);
 			node tempNode;
 			tempNode.type = type;
 			tempNode.size = size;
 			tempNode.reserved = false;
-
 			tempNode.memory = resp;
-			myNodes.push_back(tempNode);
-			resp = NULL;
-		}
-		return PP_SUCCESS;
-	}
 
-	
+			myNodes.push_back(tempNode);
+			
+			return myNodes.size() -1;
+		}
+		return PP_FAIL;
+	}
+	int lindaStuff::store(int &size, int &type)
+	{
+			memcpy(resp, work_unit_buf, size);
+	}
 	// handle[0]/*.rank*/			= picked_server; 
 	// handle[1]/*.ID*/			= resp.ID;
 	// handle[2]/*.size_of_work*/	= resp.size;
@@ -76,7 +75,6 @@
 	// int reserve_buf, int handle
 	void lindaStuff::reserver(int reserve_buf[], int handle[])
 	{
-
 		int i = 0;
 
 		if(reserve_buf[0] == 0) //then just take first one
@@ -120,3 +118,8 @@
 			handle[1] = -1;
 	}
 	
+	void lindaStuff::taker(int index, void * work_unit_buf)
+	{
+		memcpy(work_unit_buf, myNodes[index].memory, myNodes[index].size);
+		myNodes.erase(index);
+	}
