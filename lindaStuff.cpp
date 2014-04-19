@@ -68,23 +68,27 @@
 		return PP_SUCCESS;
 	}
 
-	int lindaStuff::reserver(int num_types, int &type, int &size)
+	
+	// handle[0]/*.rank*/			= picked_server; 
+	// handle[1]/*.ID*/			= resp.ID;
+	// handle[2]/*.size_of_work*/	= resp.size;
+	// handle[3]/*.type_of_work*/	= resp.type;
+	// int reserve_buf, int handle
+	int lindaStuff::reserver(int reserve_buf[], int handle[])
 	{
-		if(myNodes.size() == 0)
-			return -1;
-		
-		int i = 0;
 
-		if(type == 0) //then just take first one
+		int i = 1;
+
+		if(reserve_buf[0] == 0) //then just take first one
 		{
 			for (; i < myNodes.size(); ++i)
 			{
 				if ( !myNodes[i].reserved )
 				{
-					myNodes[i].reserved;
+					myNodes[i].reserved = true;
 				}
 			}
-			if(i == myNodes.size())
+			if(i == reserve_buf[0])
 				return -1;//NOT_FOUND
 			else
 				return i;
@@ -95,14 +99,14 @@
 			{
 				if ( !myNodes[i].reserved )
 				{
-					for (int j = 0; j < num_types; ++i)
+					for (int j = 1; j < reserve_buf[0]; ++i)
 					{
-						if(myNodes[i].type == type)
-							myNodes[i].reserved;
+						if(myNodes[i].type == reserve_buf[j])
+							myNodes[i].reserved = true;
 					}
 				}
 			}
-			if(i == myNodes.size())
+			if(i == reserve_buf[0])
 				return -1;//NOT_FOUND
 			else
 				return i;

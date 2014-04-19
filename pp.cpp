@@ -21,6 +21,7 @@ Desciption:
 #include <pthread.h>
 #include <iostream>
 #include <stack>
+#include <random>
 
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 #include "pp.h"
@@ -50,6 +51,7 @@ lindaStuff lindaSpace;
 	</sumary>*/
 int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 {
+	srand(time(NULL));
 	int server = *am_server_flag;
 	int my_inter_rank;
 	int my_side_rank;
@@ -113,6 +115,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	int temp_buf[2];
 	int reserve_buf[num_user_types+1];//+1because first is number of elements is array
 	int handle[4];
+	int index;
 	while(!done)
 	{
 		// checks if there is a "to finish"
@@ -128,14 +131,14 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			MPI_Recv(&temp_buf, 1, sizeof(temp_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
-			resp = allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
+			resp = lindaSpace.allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
 			MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
 			//get the data
 			if (resp != PP_FAIL)
 			{
 				MPI_Recv(work_unit_buf, 1, work_unit_size, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 				//put in allocated space
-				store(work_unit_buf, resp);
+				lindaSpace.store(work_unit_buf, resp);
 				//send success(index in array) or fail(-1) 
 				MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
 			}
@@ -143,16 +146,16 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		else if( mpi_flag == 3)//received reserve
 		{
 			MPI_Recv(&reserve_buf, 1, sizeof(reserve_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			resp = reserver(int reserve_buf, int handle);
+			resp = lindaSpace.reserver(int reserve_buf, int handle);
 			
 			MPI_Send(&handle,1, sizeof(handle), i, 666, lindaSpace.INTER_COMM);
 
 		}
 		else if( mpi_flag == 4)//received get
 		{
-			MPI_Recv(&type_rec, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			resp = reserver(int &num_types, int type[], int &size);
-			MPI_Send(&handle,1, sizeof(handle), i, 666, lindaSpace.INTER_COMM);
+			MPI_Recv(&index, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			resp = lindaSpace.taker(index, work_unit_buf);
+			MPI_Send(&work_unit_buf,1, sizeof(work_unit_buf), i, 666, lindaSpace.INTER_COMM);
 		}
 	}
 	printf("tuppleSpace Exit\n");
