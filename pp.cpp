@@ -131,6 +131,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			MPI_Recv(&temp_buf, 1, sizeof(temp_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
+			/*int allocate(int &size, int &type)*/
 			resp = lindaSpace.allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
 			MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
 			//get the data
@@ -138,6 +139,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			{
 				MPI_Recv(work_unit_buf, 1, work_unit_size, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 				//put in allocated space
+				/*void 	store(void *work_unit_buf, int &index)*/
 				lindaSpace.store(work_unit_buf, resp);
 				//send success(index in array) or fail(-1) 
 				MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
@@ -146,7 +148,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		else if( mpi_flag == 3)//received reserve
 		{
 			MPI_Recv(&reserve_buf, 1, sizeof(reserve_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			lindaSpace.reserver(int reserve_buf, int handle);
+			/*void reserver(int reserve_buf[], int handle[])*/
+			lindaSpace.reserver(reserve_buf, handle);
 			// if (handle[1] < 0) - NOT FOUD
 			MPI_Send(&handle,1, sizeof(handle), i, 666, lindaSpace.INTER_COMM);
 
@@ -154,6 +157,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		else if( mpi_flag == 4)//received get
 		{
 			MPI_Recv(&index, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			/*void taker(int index, void * work_unit_buf)*/
 			lindaSpace.taker(index, work_unit_buf);
 			MPI_Send(&work_unit_buf,1, sizeof(work_unit_buf), i, 666, lindaSpace.INTER_COMM);
 		}
@@ -232,7 +236,7 @@ int PP_Put(int type, int size, void * buffer )
 int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
 {
 	int types_pass[num_types+1];
-	
+	memset(handle, '\0', 4*sizeof(int));
 	types_pass[0] = num_types;
 	if (num_types > 1)
 	{
@@ -244,14 +248,13 @@ int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
 
 	MPI_Send(&types_pas,1, sizeof(types_pas), picked_server, 666, lindaSpace.INTER_COMM);
 	
-	int resp = -1;
-	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-	if(resp.ID != -1)
+	MPI_Recv(&handle, 1, sizeof(handle), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	if(handle[1] != -1)
 	{
-		handle[0]/*.rank*/			= picked_server; 
-        handle[1]/*.ID*/			= resp.ID;
-        handle[2]/*.size_of_work*/	= resp.size;
-        handle[3]/*.type_of_work*/	= resp.type;
+		// handle[0]/*.rank*/			= picked_server; 
+  //       handle[1]/*.ID*/			= resp.ID;
+  //       handle[2]/*.size_of_work*/	= resp.size;
+  //       handle[3]/*.type_of_work*/	= resp.type;
 		return PP_SUCCESS;
 	}
 	else
@@ -264,7 +267,7 @@ int PP_Get(void*work_unit_buf, int handler[])
 {
 
 	MPI_Send(handle[1]/*ID*/,1, MPI_INT, handle[0], 666, lindaSpace.INTER_COMM);
-	MPI_Recv(work_unit_buf, handle[2], sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	MPI_Recv(work_unit_buf,1, handle[2], lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 	
 	if (status == MPI_SUCCESS)
 	{

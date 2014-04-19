@@ -60,13 +60,13 @@
 
 			myNodes.push_back(tempNode);
 			
-			return myNodes.size() -1;
+			return myNodes.size() -1;//index
 		}
 		return PP_FAIL;
 	}
-	int lindaStuff::store(int &size, int &type)
+	void lindaStuff::store(void *work_unit_buf, int &index)
 	{
-			memcpy(resp, work_unit_buf, size);
+		memcpy(myNodes[index].memory, work_unit_buf, myNodes[index].size);
 	}
 	// handle[0]/*.rank*/			= picked_server; 
 	// handle[1]/*.ID*/			= resp.ID;
@@ -76,7 +76,7 @@
 	void lindaStuff::reserver(int reserve_buf[], int handle[])
 	{
 		int i = 0;
-
+		memset(handle, '\0', 4*sizeof(int));
 		if(reserve_buf[0] == 0) //then just take first one
 		{
 			for (; i < myNodes.size(); ++i)
@@ -84,7 +84,8 @@
 				if ( !myNodes[i].reserved )
 				{
 					myNodes[i].reserved = true;
-					handle[0]/*.rank*/			= my_world_rank; 
+					// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!--
+					handle[0]/*.rank*/			= my_world_rank; // <<<<<=======<<<<
 					handle[1]/*.ID*/			= i;
 					handle[2]/*.size_of_work*/	= myNodes[i].size;
 					handle[3]/*.type_of_work*/	= myNodes[i].type;

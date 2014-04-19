@@ -38,24 +38,21 @@ public:
 	MPI_Comm WORLD_COMM_DUP;
 	MPI_Comm INTER_COMM;
 
-
 	lindaStuff();
 	// Constructor
 	lindaStuff( int am_server );
 	// Destructor
 	~lindaStuff();
-	int getType();
-	bool isReserved();
-	int get_comm_inter(MPI_Comm *comm_in);
-	int get_comm_linda(MPI_Comm *comm_in);
-	int am_i_server();
-	void set_as_server();
-	int store(int type_rec, int size, void* work_unit_buf);
+	int 	getType();
+	bool 	isReserved();
+	int 	get_comm_inter(MPI_Comm *comm_in);
+	int 	get_comm_linda(MPI_Comm *comm_in);
+	int 	am_i_server();
+	void 	set_as_server();
+	int 	allocate(int &size, int &type);
+	void 	store(void *work_unit_buf, int &index);
+	void 	reserver(int reserve_buf[], int handle[]);
+	void 	taker(int index, void * work_unit_buf);
 
-
-	
-	
-
-	/* data */
 };
 #endif
