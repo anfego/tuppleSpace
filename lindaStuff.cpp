@@ -74,10 +74,10 @@
 	// handle[2]/*.size_of_work*/	= resp.size;
 	// handle[3]/*.type_of_work*/	= resp.type;
 	// int reserve_buf, int handle
-	int lindaStuff::reserver(int reserve_buf[], int handle[])
+	void lindaStuff::reserver(int reserve_buf[], int handle[])
 	{
 
-		int i = 1;
+		int i = 0;
 
 		if(reserve_buf[0] == 0) //then just take first one
 		{
@@ -86,12 +86,13 @@
 				if ( !myNodes[i].reserved )
 				{
 					myNodes[i].reserved = true;
+					handle[0]/*.rank*/			= my_world_rank; 
+					handle[1]/*.ID*/			= i;
+					handle[2]/*.size_of_work*/	= myNodes[i].size;
+					handle[3]/*.type_of_work*/	= myNodes[i].type;
+					return;
 				}
 			}
-			if(i == reserve_buf[0])
-				return -1;//NOT_FOUND
-			else
-				return i;
 		}
 		else
 		{	// go while particular not found
@@ -102,14 +103,20 @@
 					for (int j = 1; j < reserve_buf[0]; ++i)
 					{
 						if(myNodes[i].type == reserve_buf[j])
+						{
 							myNodes[i].reserved = true;
+							handle[0]/*.rank*/			= my_world_rank; 
+							handle[1]/*.ID*/			= i;
+							handle[2]/*.size_of_work*/	= myNodes[i].size;
+							handle[3]/*.type_of_work*/	= myNodes[i].type;
+							return;
+						}
 					}
 				}
 			}
-			if(i == reserve_buf[0])
-				return -1;//NOT_FOUND
-			else
-				return i;
 		}
+		
+		if(i == reserve_buf[0])
+			handle[1] = -1;
 	}
 	

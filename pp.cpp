@@ -146,8 +146,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		else if( mpi_flag == 3)//received reserve
 		{
 			MPI_Recv(&reserve_buf, 1, sizeof(reserve_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			resp = lindaSpace.reserver(int reserve_buf, int handle);
-			
+			lindaSpace.reserver(int reserve_buf, int handle);
+			// if (handle[1] < 0) - NOT FOUD
 			MPI_Send(&handle,1, sizeof(handle), i, 666, lindaSpace.INTER_COMM);
 
 		}
