@@ -237,6 +237,7 @@ int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
 {
 	int types_pass[num_types+1];
 	memset(handle, '\0', 4*sizeof(int));
+	picked_server = random()%other_side_size;
 	types_pass[0] = num_types;
 	if (num_types > 1)
 	{
