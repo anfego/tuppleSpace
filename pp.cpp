@@ -198,10 +198,10 @@ int PP_Put(int type, int size, void * buffer )
 {
 	int picked_server = random()%other_side_size;
 	int resp = -1;
-
 	pass_struct temp_buf;
+
 	temp_buf.size = size;
-	temp_buf.type = type;
+	temp_buf.types.push_back(type);
 
 	MPI_Send(&temp_buf,1, sizeof(temp_buf), picked_server, 666, lindaSpace.INTER_COMM);
 	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
@@ -225,7 +225,10 @@ int PP_Reserve(int& num_types, int types[], int &size, int& type, int& local_ind
 	int resp = -1;
 	
 	temp_buf.size = size;
-	temp_buf.type = type;
+	for (int i = 0; i < num_types; ++i)
+	{
+		temp_buf.types.push_back(types[i]);
+	}
 
 	MPI_Send(&temp_buf,1, sizeof(temp_buf), picked_server, 666, lindaSpace.INTER_COMM);
 	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
