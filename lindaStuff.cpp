@@ -46,9 +46,66 @@
 		server = 1;
 	}
 
-	int lindaStuff::store(int type_rec, int size, void* work_unit_buf)
+	int lindaStuff::store(int &type, int &size, void* work_unit_buf)
 	{
+		int resp = malloc(tempNode.memory, size);
+		if (resp == 0)//if no space
+		{
+			return PP_FAIL;
+		}
+		else
+		{
+			memcpy(resp, work_unit_buf, size);
+			node tempNode;
+			tempNode.type = type;
+			tempNode.size = size;
+			tempNode.reserved = false;
 
+			tempNode.memory = resp;
+			myNodes.push_back(tempNode);
+			resp = NULL;
+		}
+		return PP_SUCCESS;
 	}
 
+	int lindaStuff::reserver(int num_types, int &type, int &size)
+	{
+		if(myNodes.size() == 0)
+			return -1;
+		
+		int i = 0;
+
+		if(type == 0) //then just take first one
+		{
+			for (; i < myNodes.size(); ++i)
+			{
+				if ( !myNodes[i].reserved )
+				{
+					myNodes[i].reserved;
+				}
+			}
+			if(i == myNodes.size())
+				return -1;//NOT_FOUND
+			else
+				return i;
+		}
+		else
+		{	// go while particular not found
+			for (; i < myNodes.size(); ++i)
+			{
+				if ( !myNodes[i].reserved )
+				{
+					for (int j = 0; j < num_types; ++i)
+					{
+						if(myNodes[i].type == type)
+							myNodes[i].reserved;
+					}
+				}
+			}
+			if(i == myNodes.size())
+				return -1;//NOT_FOUND
+			else
+				return i;
+		}
+	}
 	

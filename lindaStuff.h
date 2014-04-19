@@ -11,6 +11,13 @@ private:
 	bool reserved;
 	int reserved_by;
 	int data;
+
+	struct node
+	{
+		int type;
+		bool reserved;
+		void* memory;
+	};
 	
 	// Methods
 

@@ -28,6 +28,12 @@ Desciption:
 
 using namespace std;
 
+	struct pass_struct
+	{
+		int type;
+		int size;
+		int local_index;
+	}__attribute__ ((packed));
 
 /*<sumary>
 	</sumary>*/
@@ -102,8 +108,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	// create stack for user types 
 	int done = 0;
 	int mpi_flag = 0;
-	int type_rec;
-	int size; //size of coming data
+	pass_struct put_struct;
 	MPI_Status status;
 
 	
@@ -117,17 +122,21 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		}
 		else if( mpi_flag == 2 )//received PUT
 		{
-			memset(work_unit_buf, '\0', work_unit_size);
-			size = 0;
-			type_rec = 0;
+			memset(put_struct, '\0', sizeof(put_struct) );
+			
 			//end of clear
-			MPI_Recv(&type_rec, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			// if(type_rec == good rec) - receive
-			MPI_Recv(&size, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			MPI_Recv(work_unit_buf, 1, size, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-			resp = store();
-			MPI_Recv(resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			
+			MPI_Recv(&put_struct, 1, sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 
+			// if(type_rec == good rec) - receive
+			resp = store(put_struct.type, put_struct.size, put_struct.buf);
+			MPI_Send(&resp,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
+
+		}
+		else if( mpi_flag == 3)
+		{
+			MPI_Recv(&type_rec, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			resp = reserver(int &num_types, int type[], int &size);
 		}
 	}
 	printf("tuppleSpace Exit\n");
@@ -176,27 +185,59 @@ int PP_Finalize()
 /*<sumary>
 	</sumary>*/
 
-int PP_Put()
+int PP_Put(int type, int size, void * buffer )
 {
-	//generate random
-	// send to server type
-	//send to server size
-	//send to server data
-	return PP_SUCCESS;
+	int picked_server = random()%other_side_size;
+	int resp = -1;
+
+	pass_struct temp_buf;
+	temp_buf.size = size;
+	temp_buf.type = type;
+
+	MPI_Send(&temp_buf,1, sizeof(temp_buf), picked_server, 666, lindaSpace.INTER_COMM);
+	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	//because of using resp we do not care about status.
+	//it may mean memory or network problem, we just send to the next random server
+	if (resp != -1)
+	{//then we feel very good and just send it
+		MPI_Send(buffer,1, size, picked_server, 666, lindaSpace.INTER_COMM);
+		resp = -1;
+		MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+		if (resp == 0)
+			return PP_SUCCESS;//else PP_FAIL
+	}
+	return PP_FAIL;
 }
 /*<sumary>
 	</sumary>*/
 
-int PP_Reserve()
+int PP_Reserve(int num_types, int types[], int type, int &size, int local_index )
 {
-	return PP_SUCCESS;
+	MPI_Send(&temp_buf,1, MPI_INT, picked_server, 666, lindaSpace.INTER_COMM);
+	MPI_Recv(&temp_buf, 1, sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	if (status)
+	{
+		size =(pass_struct)temp_buf.size;
+		type =(pass_struct)temp_buf.type;
+		local_index = (pass_struct)temp_buf.local_index;		
+		return PP_SUCCESS;
+	}
+	else
+		return NOT_FOUND;
 }
 /*<sumary>
 	</sumary>*/
 
-int PP_Get()
+int PP_Get(handler)
 {
-	return PP_SUCCESS;
+	MPI_Send(&temp_buf,1, MPI_INT, picked_server, 666, lindaSpace.INTER_COMM);
+	MPI_Recv(&put_struct, 1, sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	if (status)
+	{
+		MPI_Recv(&put_struct, 1, sizeof(put_struct), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+		return PP_SUCCESS;
+	}
+	return FAIL;
 }
 /*<sumary>
 	</sumary>*/
