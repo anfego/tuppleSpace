@@ -2,6 +2,8 @@
 #define PP_H
 
 #include <stdio.h>
+#include <stdlib.h> 
+#include <time.h>
 
 #define PP_SUCCESS      1
 #define PP_FAIL         2  // an error occurred

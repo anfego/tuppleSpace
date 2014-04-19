@@ -5,7 +5,7 @@ MPICC = /nfshome/rbutler/public/courses/pp6430/mpich3i/bin/mpic++
 # Hey!, I am comment number 2. I want to say that CFLAGS will be the
 # options I'll pass to the compiler.
 #CFLAGS=-c -Wall
-CFLAGS = -c -pedantic -w
+CFLAGS = -c -pedantic -w -std=c++0x
 AFLAGS = rf
 
 # OBJECTS =
