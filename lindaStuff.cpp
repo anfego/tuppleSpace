@@ -46,6 +46,9 @@
 		server = 1;
 	}
 
+	int lindaStuff::store(int type_rec, int size, void* work_unit_buf)
+	{
 
+	}
 
 	

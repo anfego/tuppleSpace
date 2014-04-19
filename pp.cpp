@@ -62,6 +62,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	MPI_Comm_rank(lindaSpace.MY_SIDE_COMM,&my_side_rank);
 	MPI_Comm_size(lindaSpace.MY_SIDE_COMM,&my_side_size);
 
+	char * work_unit_buf = (char *) malloc(work_unit_size);
+
 	// store usefull information
 	lindaSpace.my_world_rank = my_world_rank;
 	lindaSpace.my_side_rank = my_side_rank;
@@ -100,6 +102,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	// create stack for user types 
 	int done = 0;
 	int mpi_flag = 0;
+	int type_rec;
+	int size; //size of coming data
 	MPI_Status status;
 
 	
@@ -110,6 +114,20 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 		{
 			MPI_Recv(&done, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+		}
+		else if( mpi_flag == 2 )//received PUT
+		{
+			memset(work_unit_buf, '\0', work_unit_size);
+			size = 0;
+			type_rec = 0;
+			//end of clear
+			MPI_Recv(&type_rec, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			// if(type_rec == good rec) - receive
+			MPI_Recv(&size, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			MPI_Recv(work_unit_buf, 1, size, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			resp = store();
+			MPI_Recv(resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+
 		}
 	}
 	printf("tuppleSpace Exit\n");
@@ -160,6 +178,10 @@ int PP_Finalize()
 
 int PP_Put()
 {
+	//generate random
+	// send to server type
+	//send to server size
+	//send to server data
 	return PP_SUCCESS;
 }
 /*<sumary>

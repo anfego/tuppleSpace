@@ -43,6 +43,7 @@ public:
 	int get_comm_linda(MPI_Comm *comm_in);
 	int am_i_server();
 	void set_as_server();
+	int store(int type_rec, int size, void* work_unit_buf);
 
 
 	
