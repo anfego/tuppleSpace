@@ -272,19 +272,20 @@ int PP_Put(void * buffer, int size, int type )
 	</sumary>*/
 int PP_Reserve(int num_types_rq, int * types, int * size_found, int type_found, int * handle)
 {
-	// MPI_Status status;
-	// int types_pass[num_types+1];
+	MPI_Status status;
+	// int types_pass[num_types+1];\
+	int picked_server = rand()%lindaSpace.other_side_size;
 	// // Create a Request Handler
-	// LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type);
+	LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type, picked_server);
 	// //memset(handle, '\0', 4*sizeof(int));
 	// int picked_server = rand()%lindaSpace.other_side_size;
 	// types_pass[0] = num_types;
 	// if (num_types > 1)
 	// {
-	// 	for (int i = 0; i < num_types; ++i)
-	// 	{
-	// 		types_pass[i+1] = types[i];
-	// 	}
+	for (int i = 0; i < num_types; ++i)
+	{
+		reqHandler.addWorkType(*(types+i));
+	}
 	// }
 	// 	// Send the request to the chosen server
 	// char reqHandler_str[HANDLER_SIZE];
