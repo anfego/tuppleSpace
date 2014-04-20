@@ -44,7 +44,7 @@ bool LindaContact::isServerVisited(int server)
 	bool visited = false;
 	std::vector<int>::iterator it;
 	it = find(rq_servers.begin(), rq_servers.end(),server);
-	if (it == rq_servers.end())
+	if (it != rq_servers.end())
 	{
 		visited = true;
 	}
@@ -62,10 +62,22 @@ int LindaContact::serializer(char * buf)
 int LindaContact::deserializer(char * serial)
 {
 	int n_types;
+	int n_servers;
+	
 	char temp[100];
+	memset(temp,'\0',100*sizeof(char));
+	
 	sscanf(serial,"%d %d %d %d %99[0-9 ]s", &rq_rank, &data_id, &size, &n_types, temp);
 	printf("to deserialize %s\n", temp );
 	types = deserializeVector(n_types,temp);
+	
+	// memset(temp,'\0',100*sizeof(char));
+	
+	
+	sscanf(temp,"%d %99[0-9 ]s", &n_servers, temp);
+	printf("to deserialize %s\n", temp );
+	rq_servers = deserializeVector(n_servers,temp);
+	
 	return 0;
 }
 
@@ -119,12 +131,16 @@ std::vector<int> LindaContact::deserializeVector(int n, char *buf)
 	int element;
 	char serial[100];
 	memset(serial,'\0',100*sizeof(char));
+	
 	sscanf(buf,"%d %100[0-9 ]s", &element, serial);
+	memset(buf,'\0',strlen(buf)*sizeof(char));
+	memcpy(buf,serial,strlen(serial)*sizeof(char));
+	
 	my_vector.push_back(element);
 	printf("element pushed %d\n",element);
 	if (n > 1)
 	{
-		rec_Vector = deserializeVector(n-1,serial);
+		rec_Vector = deserializeVector(n-1,buf);
 		total_Vector.reserve( my_vector.size() + rec_Vector.size() );
 		total_Vector.insert( total_Vector.end() , my_vector.begin(), my_vector.end() );
 		total_Vector.insert( total_Vector.end() , rec_Vector.begin(), rec_Vector.end() );
