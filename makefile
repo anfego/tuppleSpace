@@ -22,8 +22,8 @@ libpp.a: pp.o lindaStuff.o lindaContact.o
 mytest.o: mytest.c
 	$(MPICC) -c $(CFLAGS) mytest.c
 
-pp.o: pp.cpp lindaContact.o
-	$(MPICC) -c $(CFLAGS) lindaContact.o pp.cpp 
+pp.o: pp.cpp 
+	$(MPICC) -c $(CFLAGS) pp.cpp 
 
 lindaStuff.o: lindaStuff.cpp 
 	$(MPICC) -c $(CFLAGS) lindaStuff.cpp 

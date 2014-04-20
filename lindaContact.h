@@ -16,6 +16,7 @@ class LindaContact
 
 public:
 	LindaContact();
+	LindaContact(char *);
 	LindaContact(int myRank, int dataID, int size_of_work, int type_of_work);
 	~LindaContact(){};
 

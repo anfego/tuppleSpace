@@ -12,6 +12,10 @@ LindaContact::LindaContact()
 	size = 0;
 	type = 0;
 }
+LindaContact::LindaContact(char * serial)
+{
+	deserializer(serial);
+}
 LindaContact::LindaContact(int myRank, int dataID, int size_of_work, int type_of_work)
 {	
 	ownerRank = myRank;

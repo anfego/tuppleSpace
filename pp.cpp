@@ -141,7 +141,10 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		{
 			
 			MPI_Recv(req_buff, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-			printf("message received %s\n",req_buff);
+			LindaContact putHandler(req_buff);
+			// printf("message received %s\n",req_buff);
+			putHandler.print();
+			
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
