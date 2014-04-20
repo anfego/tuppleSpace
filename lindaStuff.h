@@ -7,6 +7,7 @@
 
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 #include "lindaContact.h"
+
 using namespace std;
 
 class lindaStuff
@@ -25,6 +26,8 @@ private:
 		int size;
 	};
 	vector<node> myNodes;
+	void printData(int);
+	void printAllData();
 	
 
 public:

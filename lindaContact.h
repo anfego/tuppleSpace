@@ -9,10 +9,6 @@ using namespace std;
 
 class LindaContact
 {
-	int ownerRank;
-	int dataID;
-	int size;
-	int type;
 
 public:
 	LindaContact();
@@ -25,6 +21,10 @@ public:
 	void print();
 
 	/* data */
+	int ownerRank;
+	int dataID;
+	int size;
+	int type;
 };
 
 

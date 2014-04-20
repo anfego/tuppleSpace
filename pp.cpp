@@ -73,7 +73,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&(lindaSpace.MY_SIDE_COMM));
 	MPI_Comm_rank(lindaSpace.MY_SIDE_COMM,&my_side_rank);
 	MPI_Comm_size(lindaSpace.MY_SIDE_COMM,&my_side_size);
-//work_unit_size IS NOT PASSED !!!!!!!!!!!!!!!!!!!!!
+	//work_unit_size IS NOT PASSED !!!!!!!!!!!!!!!!!!!!!
 	int work_unit_size = 1000000;
 
 	void * work_unit_buf = malloc(work_unit_size);
@@ -123,6 +123,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	int handle[4];
 	int index;
 	int resp;
+	int ack;
 	char req_buff[HANDLER_SIZE];
 	memset(req_buff,'\0',HANDLER_SIZE);
 	while(!done)
@@ -141,25 +142,25 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		{
 			
 			MPI_Recv(req_buff, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+			// 
 			LindaContact putHandler(req_buff);
-			// printf("message received %s\n",req_buff);
 			putHandler.print();
 			
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
-			// resp = lindaSpace.allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
-			// MPI_Send(&resp,1, MPI_INT, lindaSpace.other_side_leader, PP_PUT_TAG, lindaSpace.INTER_COMM);
-			// //get the data
-			// if (resp != PP_FAIL)
-			// {
-			// 	MPI_Recv(work_unit_buf, 1, work_unit_size, lindaSpace.other_side_leader, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-			// 	//put in allocated space
-			// 	/*void 	store(void *work_unit_buf, int &index)*/
-			// 	lindaSpace.store(work_unit_buf, resp);
-			// 	//send success(index in array) or fail(-1) 
-			// 	MPI_Send(&resp,1, MPI_INT, lindaSpace.other_side_leader, PP_PUT_TAG, lindaSpace.INTER_COMM);
-			// }
+			resp = lindaSpace.allocate(putHandler.size, putHandler.type);
+
+			MPI_Send(&resp,1, MPI_INT, putHandler.ownerRank, PP_PUT_TAG, lindaSpace.INTER_COMM);
+			//get the datapp
+			if (resp != PP_FAIL)
+			{
+				MPI_Recv(work_unit_buf, putHandler.size, MPI_CHAR, putHandler.ownerRank, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+				//put in allocated space
+				lindaSpace.store(work_unit_buf, resp);
+				// resp = PP_SUCCESS;
+				// MPI_Send(&resp,1, MPI_INT, putHandler.ownerRank, PP_PUT_TAG, lindaSpace.INTER_COMM);
+			}
 		}
 		mpi_flag = 0;
 		MPI_Iprobe(lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &mpi_flag, &status);
@@ -181,8 +182,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			MPI_Send(&work_unit_buf,1, sizeof(work_unit_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM);
 		}
 	}
+	free(work_unit_buf);
 	printf("tuppleSpace Exit\n");
-
 	return PP_SUCCESS;	
 }
 /*<sumary>
@@ -227,40 +228,44 @@ int PP_Finalize()
 /*<sumary>
 	</sumary>*/
 
-int PP_Put(void * buffer, int type, int size )
+int PP_Put(void * buffer, int size, int type )
 {
 	// Create a Request Handler
 	LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type);
 
 	int picked_server = rand()%lindaSpace.other_side_size;
 
-	int resp = -1;
+	int pp_error = -1;
 	MPI_Status status;
 
-	int temp_buf[2];
-	temp_buf[0] = size;
-	temp_buf[1] = type;
-
 	// Send the request to the chosen server
-	char reqHandler_str[100];
+	char reqHandler_str[HANDLER_SIZE];
+	memset(reqHandler_str,'\0',HANDLER_SIZE);
 	int req_size = reqHandler.serializer(reqHandler_str);
 	reqHandler.print();
-	printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
-	
+	// printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
 	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
 	
-	// MPI_Send(&temp_buf,1,MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
-	// MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-	//because of using resp we do not care about status.
-	//it may mean memory or network problem, we just send to the next random server
-	if (resp != -1)
-	{//then we feel very good and just send it
-		MPI_Send(buffer,1, size, picked_server, 666, lindaSpace.INTER_COMM);
-		resp = -1;
-		// MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-		// if (resp == 0)
-		// 	return PP_SUCCESS;//else PP_FAIL
+	MPI_Recv(&pp_error, 1, MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+	// if (status.MPI_ERROR != MPI_SUCCESS)
+	// {
+	// 	PP_Abort(PP_FAIL);
+	// 	return PP_FAIL;
+	// }
+	if (pp_error == PP_FAIL)
+	{
+		// Retry?
+		printf("Retry Server Out of Memory: %d\n",picked_server);
+
 	}
+	else
+	{
+		// Space allocated on the server send data
+		MPI_Send(buffer,size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
+		// MPI_Recv(&pp_error, 1, MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+	}
+
+
 	return PP_SUCCESS;
 }
 /*<sumary>
@@ -301,7 +306,7 @@ int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
 int PP_Get(void *work_unit_buf, int handler[])
 {
 	MPI_Status status;
-	MPI_Send(&handler[1]/*ID*/,1, MPI_INT, handler[0], 666, lindaSpace.INTER_COMM);
+	MPI_Send(&handler[1],1, MPI_INT, handler[0], 666, lindaSpace.INTER_COMM);
 	MPI_Recv(work_unit_buf,1, handler[2], lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 
 		return PP_SUCCESS;
@@ -319,6 +324,7 @@ int PP_Set_problem_done()
 
 int PP_Abort(int error)
 {
+	printf("PP_ERROR\n");
 	MPI_Abort(lindaSpace.WORLD_COMM_DUP, error);
 	return error;
 }

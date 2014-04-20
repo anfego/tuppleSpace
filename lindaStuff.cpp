@@ -18,6 +18,10 @@ using namespace std;
 
 	lindaStuff::~lindaStuff()
 	{
+		for (int i = 0; i < myNodes.size(); ++i)
+		{
+			free(myNodes[i].memory);
+		}
 	}
 	int lindaStuff::getType()
 	{
@@ -48,6 +52,7 @@ using namespace std;
 
 	int lindaStuff::allocate(int &size, int &type)
 	{
+		// Allocates size +1 to ensure NULL ended
 		char *resp = (char *)malloc(size);
 		
 		if (resp != NULL)//if no space
@@ -59,20 +64,20 @@ using namespace std;
 			tempNode.memory = resp;
 
 			myNodes.push_back(tempNode);
-			
-			return myNodes.size() -1;//index
+			printf("\tMemory allocated\n\tNode size: %d\n",myNodes.size());
+			return (myNodes.size()-1);//index
 		}
 		return -1;
 	}
 	void lindaStuff::store(void *work_unit_buf, int &index)
 	{
+		// store data in allocated memory
 		memcpy(myNodes[index].memory, work_unit_buf, myNodes[index].size);
+		// Ensure Null Ended Data
+		// memset(myNodes[index].memory+myNodes[index].size,'\0',1);
+		printData(index);
 	}
-	// handle[0]/*.rank*/			= picked_server; 
-	// handle[1]/*.ID*/			= resp.ID;
-	// handle[2]/*.size_of_work*/	= resp.size;
-	// handle[3]/*.type_of_work*/	= resp.type;
-	// int reserve_buf, int handle
+
 	void lindaStuff::reserver(int reserve_buf[], int handle[])
 	{
 		int i = 0;
@@ -123,4 +128,17 @@ using namespace std;
 	{
 		memcpy(work_unit_buf, myNodes[index].memory, myNodes[index].size);
 		myNodes.erase(myNodes.begin()+index);
+	}
+
+	void lindaStuff::printData(int index)
+	{
+		printf("\t%d :Node %s\n", my_side_rank, (char *)myNodes[index].memory);
+	}
+	void lindaStuff::printAllData()
+	{
+		printf("\tAll Data\n\tServer: %d\n",my_side_rank);
+		for (int i = 0; i < myNodes.size(); ++i)
+		{
+			printData(i);
+		}
 	}

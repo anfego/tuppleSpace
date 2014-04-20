@@ -93,11 +93,12 @@ int main(int argc, char *argv[])
     if ( my_world_rank == MASTER_RANK )
     {
         num_answers = 0;
-        for (i=0; i < 1; i++)
+        for (i=0; i < num_work_units; i++)
         {
             memset(work_unit_buf,'X',work_unit_size);
             if (work_unit_size >= 18)
                 sprintf(work_unit_buf,"workunit %d",i);
+            printf("Storing: %s\n", work_unit_buf);
             rc = PP_Put( work_unit_buf, work_unit_size, WORK); 
             if (rc != PP_SUCCESS)
             {
@@ -110,6 +111,7 @@ int main(int argc, char *argv[])
 
     PP_Finalize();
     printf("DONE\n");
+    // free(work_unit_buf);
     
 
 
