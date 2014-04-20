@@ -27,6 +27,8 @@ int PP_Init()
         Wildcards will be described below.
     int user_types[PP_MAX_USER_TYPES];
     int server_flag;  // I begin to execute server code if true
+        If this rank becomes a server, it should stop accepting
+        Puts after it has exhausted a gigabyte.
     Discussion:
         The user should do MPI_Init and MPI_Finalize.
 
