@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             if (work_unit_size >= 18)
                 sprintf(work_unit_buf,"workunit %d",i);
             printf("Storing: %s\n", work_unit_buf);
-            rc = PP_Put( work_unit_buf, work_unit_size, WORK); 
+            rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1); 
             if (rc != PP_SUCCESS)
             {
                 dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );

@@ -27,7 +27,7 @@
 	    Discussion:
 	        The user should do MPI_Init and MPI_Finalize.
 	</sumary>*/
-int PP_Init(int num_user_types, int * user_types, int * am_server_flag);
+int PP_Init(int num_user_types, int * user_types, int am_server_flag);
 
 /*<sumary>
 
@@ -42,7 +42,7 @@ int PP_Finalize();
 	    int target_rank;  // -1 -> available for any rank
 	    // int handle[PP_HANDLE_SIZE];  // probably not useful except debugging
 	</sumary>*/
-int PP_Put(void * buffer, int size, int type );
+int PP_Put(void * buffer, int size, int type, int target);
 
 /*<sumary>
 	int PP_Reserve()
@@ -56,7 +56,7 @@ int PP_Put(void * buffer, int size, int type );
 			int size_of_work
 			int type_of_work
 	</sumary>*/
-int PP_Reserve(int num_types_rq, int * types, int * size_found, int type_found, int * handle);
+int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found, int * handle);
 
 /*<sumary>
 	int PP_Get()

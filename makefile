@@ -19,6 +19,9 @@ mytest.e: mytest.o libpp.a
 libpp.a: pp.o lindaStuff.o lindaContact.o
 	ar $(AFLAGS) libpp.a pp.o lindaStuff.o lindaContact.o
 
+pstest1.o: pstest1.c
+	$(MPICC) -c $(CFLAGS) pstest1.c
+
 mytest.o: mytest.c
 	$(MPICC) -c $(CFLAGS) mytest.c
 

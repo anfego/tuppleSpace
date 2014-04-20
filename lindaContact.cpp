@@ -52,7 +52,7 @@ bool LindaContact::isServerVisited(int server)
 }
 int LindaContact::serializer(char * buf)
 {
-	sprintf(buf, "%d %d %d ", rq_rank, data_id, size);
+	sprintf(buf, "%d   %d   %d ", rq_rank, data_id, size);
 	serializeTypeVector(buf+strlen(buf));
 	serializeServerVector(buf+strlen(buf));
 
@@ -68,14 +68,12 @@ int LindaContact::deserializer(char * serial)
 	memset(temp,'\0',100*sizeof(char));
 	
 	sscanf(serial,"%d %d %d %d %99[0-9 ]s", &rq_rank, &data_id, &size, &n_types, temp);
-	printf("to deserialize %s\n", temp );
+	// printf("to deserialize %s\n", temp );
 	types = deserializeVector(n_types,temp);
-	
-	// memset(temp,'\0',100*sizeof(char));
 	
 	
 	sscanf(temp,"%d %99[0-9 ]s", &n_servers, temp);
-	printf("to deserialize %s\n", temp );
+	// printf("to deserialize %s\n", temp );
 	rq_servers = deserializeVector(n_servers,temp);
 	
 	return 0;
@@ -86,6 +84,7 @@ void LindaContact::print()
 	char buf[HANDLER_SIZE];
 	memset(buf,'\0',HANDLER_SIZE*sizeof(char));
 	serializer(buf);
+	printf("\tLinda Handler: Rk  Id  Sz  Ty  Sr\n",buf);
 	printf("\tLinda Handler: %s\n",buf);
 }
 
@@ -137,7 +136,7 @@ std::vector<int> LindaContact::deserializeVector(int n, char *buf)
 	memcpy(buf,serial,strlen(serial)*sizeof(char));
 	
 	my_vector.push_back(element);
-	printf("element pushed %d\n",element);
+	// printf("element pushed %d\n",element);
 	if (n > 1)
 	{
 		rec_Vector = deserializeVector(n-1,buf);

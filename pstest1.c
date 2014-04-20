@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "mpi.h"
+#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 #include "pp.h"
 
 #define WORK             1

@@ -53,10 +53,10 @@ lindaStuff lindaSpace;
     Discussion:
 	The user should do MPI_Init and MPI_Finalize.
 	</sumary>*/
-int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
+int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 {
 	srand(time(NULL));
-	int server = *am_server_flag;
+	int server = am_server_flag;
 	int my_inter_rank;
 	int my_side_rank;
 	int my_world_rank;
@@ -70,7 +70,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	MPI_Comm_rank(lindaSpace.WORLD_COMM_DUP,&my_world_rank);
 	MPI_Comm_size(lindaSpace.WORLD_COMM_DUP,&world_size);
 	
-	MPI_Comm_split(MPI_COMM_WORLD, *am_server_flag, 0,&(lindaSpace.MY_SIDE_COMM));
+	MPI_Comm_split(MPI_COMM_WORLD, am_server_flag, 0,&(lindaSpace.MY_SIDE_COMM));
 	MPI_Comm_rank(lindaSpace.MY_SIDE_COMM,&my_side_rank);
 	MPI_Comm_size(lindaSpace.MY_SIDE_COMM,&my_side_size);
 	//work_unit_size IS NOT PASSED !!!!!!!!!!!!!!!!!!!!!
@@ -228,7 +228,7 @@ int PP_Finalize()
 /*<sumary>
 	</sumary>*/
 
-int PP_Put(void * buffer, int size, int type )
+int PP_Put(void * buffer, int size, int type, int target)
 {
 	// Create a Request Handler
 
@@ -270,27 +270,29 @@ int PP_Put(void * buffer, int size, int type )
 }
 /*<sumary>
 	</sumary>*/
-int PP_Reserve(int num_types_rq, int * types, int * size_found, int type_found, int * handle)
+int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found, int * handle)
 {
 	MPI_Status status;
-	// int types_pass[num_types+1];\
 	int picked_server = rand()%lindaSpace.other_side_size;
+	// int types_pass[num_types+1];
+	
 	// // Create a Request Handler
-	LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type, picked_server);
+	LindaContact reqHandler(lindaSpace.my_side_rank, 0, 0, 0, picked_server);
 	// //memset(handle, '\0', 4*sizeof(int));
 	// int picked_server = rand()%lindaSpace.other_side_size;
 	// types_pass[0] = num_types;
 	// if (num_types > 1)
 	// {
-	for (int i = 0; i < num_types; ++i)
+	for (int i = 0; i < num_types_rq; ++i)
 	{
 		reqHandler.addWorkType(*(types+i));
 	}
 	// }
 	// 	// Send the request to the chosen server
-	// char reqHandler_str[HANDLER_SIZE];
-	// memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
-	// int req_size = reqHandler.serializer(reqHandler_str);
+	char reqHandler_str[HANDLER_SIZE];
+	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
+	int req_size = reqHandler.serializer(reqHandler_str);
+	reqHandler.print();
 
 	// MPI_Send(&types_pass, num_types_rq, MPI_INT, picked_server, PP_RSV_TAG, lindaSpace.INTER_COMM);
 	
