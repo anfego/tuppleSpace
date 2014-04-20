@@ -29,6 +29,7 @@ Desciption:
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 #include "pp.h"
 #include "lindaStuff.h"
+#include "lindaContact.h"
 
 using namespace std;
 
@@ -122,6 +123,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	int handle[4];
 	int index;
 	int resp;
+	char req_buff[HANDLER_SIZE];
+	memset(req_buff,'\0',HANDLER_SIZE);
 	while(!done)
 	{
 		// checks if there is a "to finish"
@@ -137,8 +140,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 		if( mpi_flag == 1 )//received PUT
 		{
 			
-			printf("message received %d\n",temp_buf);
-			MPI_Recv(&temp_buf, 1, MPI_INT, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+			MPI_Recv(req_buff, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+			printf("message received %s\n",req_buff);
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
@@ -223,7 +226,11 @@ int PP_Finalize()
 
 int PP_Put(void * buffer, int type, int size )
 {
+	// Create a Request Handler
+	LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type);
+
 	int picked_server = rand()%lindaSpace.other_side_size;
+
 	int resp = -1;
 	MPI_Status status;
 
@@ -231,7 +238,15 @@ int PP_Put(void * buffer, int type, int size )
 	temp_buf[0] = size;
 	temp_buf[1] = type;
 
-	MPI_Send(&temp_buf,1,MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
+	// Send the request to the chosen server
+	char reqHandler_str[100];
+	int req_size = reqHandler.serializer(reqHandler_str);
+	reqHandler.print();
+	printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
+	
+	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
+	
+	// MPI_Send(&temp_buf,1,MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
 	// MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 	//because of using resp we do not care about status.
 	//it may mean memory or network problem, we just send to the next random server

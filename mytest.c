@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     if ( my_world_rank == MASTER_RANK )
     {
         num_answers = 0;
-        for (i=0; i < num_work_units; i++)
+        for (i=0; i < 1; i++)
         {
             memset(work_unit_buf,'X',work_unit_size);
             if (work_unit_size >= 18)

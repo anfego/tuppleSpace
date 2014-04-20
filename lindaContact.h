@@ -3,6 +3,8 @@
 
 #include <string>
 
+#define HANDLER_SIZE 100
+
 using namespace std; 
 
 class LindaContact
@@ -15,7 +17,7 @@ class LindaContact
 public:
 	LindaContact();
 	LindaContact(int myRank, int dataID, int size_of_work, int type_of_work);
-	~LindaContact();
+	~LindaContact(){};
 
 	int serializer(char *);
 	int deserializer(char *);

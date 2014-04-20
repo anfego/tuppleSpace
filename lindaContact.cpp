@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <string.h>
 #include "lindaContact.h"
 
 using namespace std;
@@ -22,17 +23,17 @@ LindaContact::LindaContact(int myRank, int dataID, int size_of_work, int type_of
 int LindaContact::serializer(char * buf)
 {
 	sprintf(buf, "%d %d %d %d",ownerRank,dataID,size,type);
-	return sizeof(buf);
+	return strlen(buf);
 }
 int LindaContact::deserializer(char * serial)
 {
-	sscanf(serial,"%d %d %d %d", &ownerRank, &dataID, &size, &type);
+	sscanf(serial,"%d %d %d %d\0", &ownerRank, &dataID, &size, &type);
 	return 0;
 }
 
 void LindaContact::print()
 {
-	char buf[100];
+	char buf[HANDLER_SIZE];
 	serializer(buf);
 	printf("\tLinda Handler: %s\n",buf);
 }

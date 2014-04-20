@@ -1,4 +1,5 @@
 # I am a comment, and I want to say that the variable CC will bethe compiler to use.
+CC = gcc
 MPICC = /nfshome/rbutler/public/courses/pp6430/mpich3i/bin/mpic++
 # Hey!, I am comment number 2. I want to say that CFLAGS will be the
 # options I'll pass to the compiler.
@@ -15,17 +16,20 @@ pstest1.e: pstest1.o libpp.a
 mytest.e: mytest.o libpp.a
 	$(MPICC) mytest.o libpp.a -o mytest.e
 	
-libpp.a: pp.o lindaStuff.o
-	ar $(AFLAGS) libpp.a pp.o lindaStuff.o
+libpp.a: pp.o lindaStuff.o lindaContact.o
+	ar $(AFLAGS) libpp.a pp.o lindaStuff.o lindaContact.o
 
 mytest.o: mytest.c
 	$(MPICC) -c $(CFLAGS) mytest.c
 
-pp.o: pp.cpp
-	$(MPICC) -c $(CFLAGS) pp.cpp
+pp.o: pp.cpp lindaContact.o
+	$(MPICC) -c $(CFLAGS) lindaContact.o pp.cpp 
 
-lindaStuff.o: lindaStuff.cpp
-	$(MPICC) -c $(CFLAGS) lindaStuff.cpp
+lindaStuff.o: lindaStuff.cpp 
+	$(MPICC) -c $(CFLAGS) lindaStuff.cpp 
+
+lindaContact.o: lindaContact.cpp
+	$(CC) -c $(CFLAGS) lindaContact.cpp
 
 # pp
 # %.o: %.c

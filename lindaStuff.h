@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
-##include "lindaContact.h"
+#include "lindaContact.h"
 using namespace std;
 
 class lindaStuff
@@ -26,8 +26,6 @@ private:
 	};
 	vector<node> myNodes;
 	
-	// Private Methods
-	int serializer(int * dataIN, lindaContact * lindaNumbers);
 
 public:
 	// Default constructor
@@ -35,6 +33,7 @@ public:
 	
 	int my_world_rank;
 	int my_side_rank;
+	
 
 	int world_size;
 	int my_side_size;
