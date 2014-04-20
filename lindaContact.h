@@ -18,6 +18,7 @@ public:
 	LindaContact();
 	LindaContact(char *);
 	LindaContact(int myRank, int dataID, int size_of_work, int type_of_work, int server);
+	LindaContact(int myRank, int target, int size_of_work, int type_of_work);
 	~LindaContact(){};
 
 	int serializer(char *);
@@ -25,8 +26,9 @@ public:
 	void print();
 
 	int addWorkType(int type_of_work);
-	int addServer(int server);
+	bool addServer(int server);
 	bool isServerVisited(int server);
+	int numServerVisited();
 	int serializeTypeVector(char *);
 	int serializeServerVector(char *);
 	std::vector<int> deserializeVector(int, char *);

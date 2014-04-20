@@ -78,7 +78,7 @@ using namespace std;
 		printData(index);
 	}
 
-	void lindaStuff::reserver(LindaContact rq_buf, int handle[])
+	void lindaStuff::reserver(int rq_buf, int handle[])
 	{
 		int i = 0;
 		memset(handle, '\0', 4*sizeof(int));

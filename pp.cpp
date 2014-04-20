@@ -187,6 +187,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			getHandler.print();
 			/*void taker(int index, void * work_unit_buf)*/
 			lindaSpace.taker(index, work_unit_buf);
+			
 			MPI_Send(&handle,HANDLER_SIZE, MPI_CHAR, getHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
 		}
 	}
@@ -239,10 +240,11 @@ int PP_Finalize()
 int PP_Put(void * buffer, int size, int type, int target)
 {
 	// Create a Request Handler
+	LindaContact reqHandler(lindaSpace.my_side_rank, target, size, type);
 
 	int picked_server = rand()%lindaSpace.other_side_size;
-	LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type, picked_server);
-
+	reqHandler.addServer(picked_server);
+	
 	int pp_error = -1;
 	MPI_Status status;
 
@@ -283,6 +285,7 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 	// TODO: Fix
 	MPI_Status status;
 	int picked_server = rand()%lindaSpace.other_side_size;
+	int pp_error = -1;
 	// int types_pass[num_types+1];
 	
 	// // Create a Request Handler
@@ -313,13 +316,6 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 		printf("Not found?: %d\n",picked_server);
 
 	}
-	else
-	{
-		// Space allocated on the server send data
-		MPI_Send(buffer,size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
-		// MPI_Recv(&pp_error, 1, MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-	}
-
 
 }
 /*<sumary>

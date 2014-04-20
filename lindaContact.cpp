@@ -25,6 +25,13 @@ LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_
 	LindaContact::addServer(server);
 	
 }
+LindaContact(int myRank, int target, int size_of_work, int type_of_work)
+{
+	rq_rank = myRank;
+	location_rank = target;
+	size = size_of_work;
+	lindaContact::addWorkType(type_of_work);
+}
 
 
 int LindaContact::addWorkType(int type_of_work)
@@ -33,10 +40,14 @@ int LindaContact::addWorkType(int type_of_work)
 	return types.size();
 }
 
-int LindaContact::addServer(int server)
+bool LindaContact::addServer(int server)
 {
-	rq_servers.push_back(server);
-	return rq_servers.size();
+	if( !isServerVisited(server))
+	{
+		rq_servers.push_back(server);
+		return true;
+	}
+	1return false;
 }
 
 bool LindaContact::isServerVisited(int server)
@@ -50,6 +61,11 @@ bool LindaContact::isServerVisited(int server)
 	}
 	return visited;
 }
+int LindaContact::numServerVisited()
+{
+	return rq_servers.size();
+}
+
 int LindaContact::serializer(char * buf)
 {
 			//	 rR    id   sz   lR  tR nT T&S
