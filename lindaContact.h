@@ -27,7 +27,9 @@ public:
 	int addWorkType(int type_of_work);
 	int addServer(int server);
 	bool isServerVisited(int server);
-
+	int serializeTypeVector(char *);
+	int serializeServerVector(char *);
+	std::vector<int> deserializeVector(int, char *);
 	/* data */
 	int rq_rank;
 	int data_id;

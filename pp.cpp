@@ -125,7 +125,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	int resp;
 	int ack;
 	char req_buff[HANDLER_SIZE];
-	memset(req_buff,'\0',HANDLER_SIZE);
+	memset(req_buff,'\0',HANDLER_SIZE*sizeof(char));
 	while(!done)
 	{
 		// checks if there is a "to finish"
@@ -240,7 +240,7 @@ int PP_Put(void * buffer, int size, int type )
 
 	// Send the request to the chosen server
 	char reqHandler_str[HANDLER_SIZE];
-	memset(reqHandler_str,'\0',HANDLER_SIZE);
+	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
 	int req_size = reqHandler.serializer(reqHandler_str);
 	reqHandler.print();
 	// printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
@@ -288,7 +288,7 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int type_found, 
 	// }
 	// 	// Send the request to the chosen server
 	// char reqHandler_str[HANDLER_SIZE];
-	// memset(reqHandler_str,'\0',HANDLER_SIZE);
+	// memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
 	// int req_size = reqHandler.serializer(reqHandler_str);
 
 	// MPI_Send(&types_pass, num_types_rq, MPI_INT, picked_server, PP_RSV_TAG, lindaSpace.INTER_COMM);
