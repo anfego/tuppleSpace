@@ -17,6 +17,7 @@ class LindaContact
 public:
 	LindaContact();
 	LindaContact(char *);
+	LindaContact(int myRank);
 	LindaContact(int myRank, int dataID, int size_of_work, int type_of_work, int server);
 	LindaContact(int myRank, int target, int size_of_work, int type_of_work);
 	~LindaContact(){};
@@ -26,6 +27,9 @@ public:
 	void print();
 
 	int addWorkType(int type_of_work);
+	int numWorkTypes();
+	void clcWorkTypes();
+
 	bool addServer(int server);
 	bool isServerVisited(int server);
 	int numServerVisited();

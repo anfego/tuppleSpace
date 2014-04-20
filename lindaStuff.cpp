@@ -78,11 +78,11 @@ using namespace std;
 		printData(index);
 	}
 
-	void lindaStuff::reserver(int rq_buf, int handle[])
+	void lindaStuff::reserver(int rq_buf[], int handle[])
 	{
 		int i = 0;
 		memset(handle, '\0', 4*sizeof(int));
-		if(reserve_buf[0] == 0) //then just take first one
+		if(rq_buf[0] == 0) //then just take first one
 		{
 			for (; i < myNodes.size(); ++i)
 			{
@@ -104,9 +104,9 @@ using namespace std;
 			{
 				if ( !myNodes[i].reserved )
 				{
-					for (int j = 1; j < reserve_buf[0]; ++i)
+					for (int j = 1; j < rq_buf[0]; ++i)
 					{
-						if(myNodes[i].type == reserve_buf[j])
+						if(myNodes[i].type == rq_buf[j])
 						{
 							myNodes[i].reserved = true;
 							handle[0]/*.rank*/			= my_world_rank; 
@@ -120,8 +120,32 @@ using namespace std;
 			}
 		}
 		
-		if(i == reserve_buf[0])
+		if(i == rq_buf[0])
 			handle[1] = -1;
+	}
+	bool lindaStuff::reserver(LindaContact & rsvHandler)
+	{
+		for (int i = 0; i < myNodes.size(); ++i)
+		{
+			for (int j = 0; j < rsvHandler.types.size(); ++j)
+			{
+				//TODO: Add target validation
+				if (!myNodes[i].reserved && ( rsvHandler.types[j] == -1 || myNodes[i].type == rsvHandler.types[j]))
+				{
+					printf("reserved\n");
+					myNodes[i].reserved = true;
+					rsvHandler.location_rank = my_side_rank;
+					rsvHandler.size = myNodes[i].size;
+					rsvHandler.clcWorkTypes();
+					rsvHandler.addWorkType(myNodes[i].type);
+					return true;
+
+				}	
+
+			}
+		}
+		// not found
+		return false;
 	}
 	
 	void lindaStuff::taker(int index, void * work_unit_buf)

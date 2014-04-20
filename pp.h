@@ -5,15 +5,16 @@
 #include <stdlib.h> 
 #include <time.h>
 
-#define PP_SUCCESS      1
-#define PP_FAIL         -11  // an error occurred
-#define PP_EXHAUSTION   3
-#define PP_NO_MORE_WORK 4
-#define PP_HANDLE_SIZE 	6
-#define PP_FINALIZE_TAG	666
-#define PP_PUT_TAG		999
-#define PP_RSV_TAG		555
-#define PP_GET_TAG		333
+#define PP_SUCCESS      	1
+#define PP_FAIL         	-11	 // an error occurred
+#define PP_EXHAUSTION   	3
+#define PP_NO_MORE_WORK 	4
+#define PP_HANDLE_SIZE 		6
+#define PP_FINALIZE_TAG		666
+#define PP_PUT_TAG			999
+#define PP_RSV_TAG			555
+#define PP_GET_TAG			333
+#define PP_WILDCARD_TYPE	-1
 
 /*<sumary>
 	int PP_Init()

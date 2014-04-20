@@ -21,16 +21,29 @@ LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_
 	rq_rank = myRank;
 	data_id = dataID;
 	size = size_of_work;
+	target_rank = -1;
+	location_rank = -1;
 	LindaContact::addWorkType(type_of_work);
 	LindaContact::addServer(server);
 	
 }
-LindaContact(int myRank, int target, int size_of_work, int type_of_work)
+
+LindaContact::LindaContact(int myRank, int target, int size_of_work, int type_of_work)
 {
 	rq_rank = myRank;
-	location_rank = target;
+	target_rank = target;
+	location_rank = -1;
 	size = size_of_work;
-	lindaContact::addWorkType(type_of_work);
+	data_id = 0;
+	LindaContact::addWorkType(type_of_work);
+}
+LindaContact::LindaContact(int myRank)
+{
+	rq_rank = myRank;
+	target_rank = -1;
+	location_rank = -1;
+	size = 0;
+	data_id = 0;
 }
 
 
@@ -38,6 +51,14 @@ int LindaContact::addWorkType(int type_of_work)
 {
 	types.push_back(type_of_work);
 	return types.size();
+}
+int LindaContact::numWorkTypes()
+{
+	return types.size();
+}
+void LindaContact::clcWorkTypes()
+{
+	types.clear();
 }
 
 bool LindaContact::addServer(int server)
@@ -47,19 +68,18 @@ bool LindaContact::addServer(int server)
 		rq_servers.push_back(server);
 		return true;
 	}
-	1return false;
+	return false;
 }
 
 bool LindaContact::isServerVisited(int server)
 {
-	bool visited = false;
 	std::vector<int>::iterator it;
 	it = find(rq_servers.begin(), rq_servers.end(),server);
 	if (it != rq_servers.end())
 	{
-		visited = true;
+		return true;
 	}
-	return visited;
+	return false;
 }
 int LindaContact::numServerVisited()
 {

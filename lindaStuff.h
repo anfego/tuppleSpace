@@ -17,7 +17,7 @@ private:
 	bool reserved;
 	int reserved_by;
 	int data;
-
+	//TODO: Add target suport
 	struct node
 	{
 		int type;
@@ -62,6 +62,7 @@ public:
 	int 	allocate(int size, int type);
 	void 	store(void *work_unit_buf, int &index);
 	void 	reserver(int reserve_buf[], int handle[]);
+	bool 	reserver(LindaContact & rsvHandler);
 	void 	taker(int index, void * work_unit_buf);
 
 };

@@ -142,7 +142,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 		{
 			
 			MPI_Recv(rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-			// 
+			
 			LindaContact putHandler(rq_buf);
 			putHandler.print();
 			
@@ -171,10 +171,13 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			LindaContact rsvHandler(rq_buf);
 			printf("PP_Reserve:\n");
 			rsvHandler.print();
-
-			lindaSpace.reserver(reserve_buf, handle);
+			int pp_error = PP_FAIL;
+			if( lindaSpace.reserver(rsvHandler) )
+			{
+				printf("elements found\n");
+			}
 			// if (handle[1] < 0) - NOT FOUD
-			MPI_Send(&handle,HANDLER_SIZE, MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
+			MPI_Send(&pp_error,1, MPI_INT, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
 		}
 		mpi_flag = 0;
 		MPI_Iprobe(MPI_ANY_SOURCE, PP_GET_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
@@ -187,8 +190,9 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			getHandler.print();
 			/*void taker(int index, void * work_unit_buf)*/
 			lindaSpace.taker(index, work_unit_buf);
+			int error = PP_FAIL;
 			
-			MPI_Send(&handle,HANDLER_SIZE, MPI_CHAR, getHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
+			MPI_Send(&error,1, MPI_INT, getHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
 		}
 	}
 	free(work_unit_buf);
@@ -284,27 +288,31 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 {
 	// TODO: Fix
 	MPI_Status status;
-	int picked_server = rand()%lindaSpace.other_side_size;
 	int pp_error = -1;
-	// int types_pass[num_types+1];
+	// Create a Request Handler
+	LindaContact reqHandler(lindaSpace.my_side_rank);
+	// if num_types_rq == 0 do PP_WILDCARD_TYPE
+	if( num_types_rq > 0)
+		for (int i = 0; i < num_types_rq; ++i)
+		{
+			int type = *(types+i);
+			printf("\t\tTyped to add: %d\n",type);
+			reqHandler.addWorkType(type);
+		}
+	else
+			reqHandler.addWorkType(PP_WILDCARD_TYPE);
+
+
+	printf("num_types: %d\n", reqHandler.numWorkTypes());
 	
-	// // Create a Request Handler
-	LindaContact reqHandler(lindaSpace.my_side_rank, 0, 0, 0, picked_server);
-	// //memset(handle, '\0', 4*sizeof(int));
-	// int picked_server = rand()%lindaSpace.other_side_size;
-	// types_pass[0] = num_types;
-	// if (num_types > 1)
-	// {
-	for (int i = 0; i < num_types_rq; ++i)
-	{
-		reqHandler.addWorkType(*(types+i));
-	}
-	// }
-	// 	// Send the request to the chosen server
+	int picked_server = rand()%lindaSpace.other_side_size;
+	reqHandler.addServer(picked_server);
+	reqHandler.print();
+	
+	// Send the request to the chosen server
 	char reqHandler_str[HANDLER_SIZE];
 	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
 	int req_size = reqHandler.serializer(reqHandler_str);
-	reqHandler.print();
 
 	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_RSV_TAG, lindaSpace.INTER_COMM);
 	
