@@ -5,7 +5,8 @@ using namespace std;
 
 int main(int argc, char const *argv[])
 {
-	char data[] = "1 2 3 3 6 3 9 1 4";
+	//              rR  Id  Sz  lR  tR  Ty     Sr
+	char data[] = "\t1  2   3   3   2   2 2 1  4 4 5 3 5";
 	LindaContact linda(data);
 	linda.print();
 	if (linda.isServerVisited(4))

@@ -52,7 +52,8 @@ bool LindaContact::isServerVisited(int server)
 }
 int LindaContact::serializer(char * buf)
 {
-	sprintf(buf, "%d   %d   %d   ", rq_rank, data_id, size);
+			//	 rR    id   sz   lR  tR nT T&S
+	sprintf(buf, "%d   %d   %d   %d   %d   ", rq_rank, data_id, size, location_rank, target_rank);
 	serializeTypeVector(buf+strlen(buf));
 	serializeServerVector(buf+strlen(buf));
 
@@ -66,8 +67,8 @@ int LindaContact::deserializer(char * serial)
 	
 	char temp[100];
 	memset(temp,'\0',100*sizeof(char));
-	
-	sscanf(serial,"%d %d %d %d %99[0-9 ]s", &rq_rank, &data_id, &size, &n_types, temp);
+	//			  rR  id sz lR tR nT T&S
+	sscanf(serial,"%d %d %d %d %d %d %99[0-9 ]s", &rq_rank, &data_id, &size, &location_rank, &target_rank, &n_types, temp);
 	// printf("to deserialize %s\n", temp );
 	types = deserializeVector(n_types,temp);
 	
@@ -84,7 +85,7 @@ void LindaContact::print()
 	char buf[HANDLER_SIZE];
 	memset(buf,'\0',HANDLER_SIZE*sizeof(char));
 	serializer(buf);
-	printf("\tLinda Handler: Rk  Id  Sz  Ty  Sr\n",buf);
+	printf("\tLinda Handler: rK  Id  Sz  lR  tR   Ty   Sr\n");
 	printf("\tLinda Handler: %s\n",buf);
 }
 

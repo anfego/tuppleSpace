@@ -34,6 +34,8 @@ public:
 	int rq_rank;
 	int data_id;
 	int size;
+	int location_rank;
+	int target_rank;
 	std::vector<int> types;
 	std::vector<int> rq_servers;
 };
