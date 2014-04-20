@@ -149,7 +149,7 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
-			resp = lindaSpace.allocate(putHandler.size, putHandler.types[0]);
+			resp = lindaSpace.allocate(putHandler.size, putHandler.types[0] );
 
 			MPI_Send(&resp,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM);
 			//get the datapp

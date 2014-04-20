@@ -50,21 +50,21 @@ using namespace std;
 		server = 1;
 	}
 
-	int lindaStuff::allocate(int &size, int &type)
+	int lindaStuff::allocate(int size, int type)
 	{
+		node tempNode;
 		// Allocates size +1 to ensure NULL ended
-		char *resp = (char *)malloc(size);
-		
-		if (resp != NULL)//if no space
+		tempNode.memory = (char *)malloc((size+1)*sizeof(char));
+		if (tempNode.memory != NULL)//if no space
 		{
-			node tempNode;
+			memset(tempNode.memory,'\0',(size+1)*sizeof(char));
 			tempNode.type = type;
 			tempNode.size = size;
 			tempNode.reserved = false;
-			tempNode.memory = resp;
+			
 
 			myNodes.push_back(tempNode);
-			printf("\tMemory allocated\n\tNode size: %d\n",myNodes.size());
+			printf("\tMemory allocated: %s\n\tNode size: %d\n",(char *)tempNode.memory, myNodes.size());
 			return (myNodes.size()-1);//index
 		}
 		return -1;
@@ -72,7 +72,7 @@ using namespace std;
 	void lindaStuff::store(void *work_unit_buf, int &index)
 	{
 		// store data in allocated memory
-		memcpy(myNodes[index].memory, work_unit_buf, myNodes[index].size);
+		memcpy(myNodes[index].memory, work_unit_buf, myNodes[index].size*sizeof(char));
 		// Ensure Null Ended Data
 		// memset(myNodes[index].memory+myNodes[index].size,'\0',1);
 		printData(index);
