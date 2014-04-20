@@ -52,7 +52,7 @@ bool LindaContact::isServerVisited(int server)
 }
 int LindaContact::serializer(char * buf)
 {
-	sprintf(buf, "%d   %d   %d ", rq_rank, data_id, size);
+	sprintf(buf, "%d   %d   %d   ", rq_rank, data_id, size);
 	serializeTypeVector(buf+strlen(buf));
 	serializeServerVector(buf+strlen(buf));
 
