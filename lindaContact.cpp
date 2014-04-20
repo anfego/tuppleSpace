@@ -7,7 +7,7 @@ using namespace std;
 LindaContact::LindaContact()
 {
 	rq_rank = 0;
-	dataID = 0;
+	data_id = 0;
 	size = 0;
 	LindaContact:: addWorkType(0);
 	LindaContact:: addServer(0);
@@ -19,7 +19,7 @@ LindaContact::LindaContact(char * serial)
 LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_work, int server)
 {	
 	rq_rank = myRank;
-	dataID = dataID;
+	data_id = dataID;
 	size = size_of_work;
 	LindaContact:: addWorkType(type_of_work);
 	LindaContact:: addServer(server);
@@ -28,7 +28,7 @@ LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_
 
 int LindaContact::serializer(char * buf)
 {
-	sprintf(buf, "%d %d %d %d",rq_rank,dataID,size,types[0]);
+	sprintf(buf, "%d %d %d %d",rq_rank,data_id,size,types[0]);
 	return strlen(buf);
 }
 
@@ -59,7 +59,7 @@ bool LindaContact::isServerVisited(int server)
 int LindaContact::deserializer(char * serial)
 {
 	int type;
-	sscanf(serial,"%d %d %d %d\0", &rq_rank, &dataID, &size, &type);
+	sscanf(serial,"%d %d %d %d\0", &rq_rank, &data_id, &size, &type);
 	addWorkType(type);
 	return 0;
 }

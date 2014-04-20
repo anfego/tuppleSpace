@@ -30,7 +30,7 @@ public:
 
 	/* data */
 	int rq_rank;
-	int dataID;
+	int data_id;
 	int size;
 	std::vector<int> types;
 	std::vector<int> rq_servers;
