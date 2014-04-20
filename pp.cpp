@@ -270,11 +270,12 @@ int PP_Put(void * buffer, int size, int type )
 }
 /*<sumary>
 	</sumary>*/
-int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
+int PP_Reserve(int num_types_rq, int * types, int * size_found, int type_found, int * handle)
 {
 	MPI_Status status;
 	int types_pass[num_types+1];
-//***********!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// Create a Request Handler
+	LindaContact reqHandler(lindaSpace.my_side_rank, 0, size, type);
 	//memset(handle, '\0', 4*sizeof(int));
 	int picked_server = rand()%lindaSpace.other_side_size;
 	types_pass[0] = num_types;
@@ -285,10 +286,14 @@ int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] )
 			types_pass[i+1] = types[i];
 		}
 	}
+		// Send the request to the chosen server
+	char reqHandler_str[HANDLER_SIZE];
+	memset(reqHandler_str,'\0',HANDLER_SIZE);
+	int req_size = reqHandler.serializer(reqHandler_str);
 
-	MPI_Send(&types_pass,1, sizeof(types_pass), picked_server, 666, lindaSpace.INTER_COMM);
+	MPI_Send(&types_pass, num_types_rq, MPI_INT, picked_server, PP_RSV_TAG, lindaSpace.INTER_COMM);
 	
-	MPI_Recv(&handle, 1, sizeof(handle), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	MPI_Recv(&handle, 1, sizeof(handle), lindaSpace.other_side_leader, PP_RSV_TAG, lindaSpace.INTER_COMM, &status);
 	if(handle[1] != -1)
 	{
 		// handle[0]/*.rank*/			= picked_server; 

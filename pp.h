@@ -12,7 +12,7 @@
 #define PP_HANDLE_SIZE 	6
 #define PP_FINALIZE_TAG	666
 #define PP_PUT_TAG		999
-#define PP_RESV_TAG		555
+#define PP_RSV_TAG		555
 #define PP_GET_TAG		333
 
 /*<sumary>
@@ -46,17 +46,17 @@ int PP_Put(void * buffer, int size, int type );
 
 /*<sumary>
 	int PP_Reserve()
-	int num_types_in_req;        // <= 0 -> wildcard (any type)
-	int types_to_search_for[];   // logically OR'd together
-	int *size_of_work_found;
-	int *type_of_work_found;
-	int handle[PP_HANDLE_SIZE];  // contains all nec info to do a Get later
-		int rank where data is
-		int unique ID of the data item at that rank
-		int size_of_work
-		int type_of_work
+		int num_types_in_req;        // <= 0 -> wildcard (any type)
+		int types_to_search_for[];   // logically OR'd together
+		int *size_of_work_found;
+		int *type_of_work_found;
+		int handle[PP_HANDLE_SIZE];  // contains all nec info to do a Get later
+			int rank where data is
+			int unique ID of the data item at that rank
+			int size_of_work
+			int type_of_work
 	</sumary>*/
-int PP_Reserve(int& num_types, int types[], int &size, int& type, int handle[] );
+int PP_Reserve(int num_types_rq, int * types, int * size_found, int type_found, int * handle);
 
 /*<sumary>
 	int PP_Get()
