@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
-#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
+#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
+##include "lindaContact.h"
 using namespace std;
 
 class lindaStuff
@@ -25,7 +26,8 @@ private:
 	};
 	vector<node> myNodes;
 	
-	// Methods
+	// Private Methods
+	int serializer(int * dataIN, lindaContact * lindaNumbers);
 
 public:
 	// Default constructor

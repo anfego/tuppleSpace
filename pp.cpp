@@ -125,34 +125,39 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 	while(!done)
 	{
 		// checks if there is a "to finish"
-		MPI_Iprobe(lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &mpi_flag, &status);
+		mpi_flag = 0;
+		MPI_Iprobe(lindaSpace.other_side_leader, PP_FINALIZE_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
 		if (mpi_flag == 1)		// if true there is a message, PP_Finalize
 		{
-			MPI_Recv(&done, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			MPI_Recv(&done, 1, MPI_INT, lindaSpace.other_side_leader, PP_FINALIZE_TAG, lindaSpace.INTER_COMM, &status);
+
 		}
-		else if( mpi_flag == 2 )//received PUT
+		mpi_flag = 0;
+		MPI_Iprobe(MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
+		if( mpi_flag == 1 )//received PUT
 		{
-//****>>>>>>>>>>>>>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//memset(temp_buf, '\0', sizeof(temp_buf) );
 			
-			MPI_Recv(&temp_buf, 1, sizeof(temp_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+			printf("message received %d\n",temp_buf);
+			MPI_Recv(&temp_buf, 1, MPI_INT, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
-			resp = lindaSpace.allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
-			MPI_Send(&resp,1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM);
-			//get the data
-			if (resp != PP_FAIL)
-			{
-				MPI_Recv(work_unit_buf, 1, work_unit_size, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-				//put in allocated space
-				/*void 	store(void *work_unit_buf, int &index)*/
-				lindaSpace.store(work_unit_buf, resp);
-				//send success(index in array) or fail(-1) 
-				MPI_Send(&resp,1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM);
-			}
+			// resp = lindaSpace.allocate(temp_buf[0]/*size*/, temp_buf[1]/*type*/);
+			// MPI_Send(&resp,1, MPI_INT, lindaSpace.other_side_leader, PP_PUT_TAG, lindaSpace.INTER_COMM);
+			// //get the data
+			// if (resp != PP_FAIL)
+			// {
+			// 	MPI_Recv(work_unit_buf, 1, work_unit_size, lindaSpace.other_side_leader, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
+			// 	//put in allocated space
+			// 	/*void 	store(void *work_unit_buf, int &index)*/
+			// 	lindaSpace.store(work_unit_buf, resp);
+			// 	//send success(index in array) or fail(-1) 
+			// 	MPI_Send(&resp,1, MPI_INT, lindaSpace.other_side_leader, PP_PUT_TAG, lindaSpace.INTER_COMM);
+			// }
 		}
-		else if( mpi_flag == 3)//received reserve
+		mpi_flag = 0;
+		MPI_Iprobe(lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &mpi_flag, &status);
+		if( mpi_flag == 3)//received reserve
 		{
 			MPI_Recv(&reserve_buf, 1, sizeof(reserve_buf), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 			/*void reserver(int reserve_buf[], int handle[])*/
@@ -161,7 +166,8 @@ int PP_Init(int num_user_types, int * user_types, int * am_server_flag)
 			MPI_Send(&handle,1, sizeof(handle), lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM);
 
 		}
-		else if( mpi_flag == 4)//received get
+		MPI_Iprobe(lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &mpi_flag, &status);
+		if( mpi_flag == 4)//received get
 		{
 			MPI_Recv(&index, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 			/*void taker(int index, void * work_unit_buf)*/
@@ -193,7 +199,7 @@ int PP_Finalize()
 			// Sends to every server a "to finish" signal
 			for(int i = 0; i < lindaSpace.other_side_size; i++)
 			{
-				MPI_Send(&done,1, MPI_INT, i, 666, lindaSpace.INTER_COMM);
+				MPI_Send(&done,1, MPI_INT, i, PP_FINALIZE_TAG, lindaSpace.INTER_COMM);
 			}
 		}
 
@@ -215,7 +221,7 @@ int PP_Finalize()
 /*<sumary>
 	</sumary>*/
 
-int PP_Put(int type, int size, void * buffer )
+int PP_Put(void * buffer, int type, int size )
 {
 	int picked_server = rand()%lindaSpace.other_side_size;
 	int resp = -1;
@@ -225,19 +231,19 @@ int PP_Put(int type, int size, void * buffer )
 	temp_buf[0] = size;
 	temp_buf[1] = type;
 
-	MPI_Send(&temp_buf,1, sizeof(temp_buf), picked_server, 666, lindaSpace.INTER_COMM);
-	MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+	MPI_Send(&temp_buf,1,MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
+	// MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
 	//because of using resp we do not care about status.
 	//it may mean memory or network problem, we just send to the next random server
 	if (resp != -1)
 	{//then we feel very good and just send it
 		MPI_Send(buffer,1, size, picked_server, 666, lindaSpace.INTER_COMM);
 		resp = -1;
-		MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
-		if (resp == 0)
-			return PP_SUCCESS;//else PP_FAIL
+		// MPI_Recv(&resp, 1, MPI_INT, lindaSpace.other_side_leader, 666, lindaSpace.INTER_COMM, &status);
+		// if (resp == 0)
+		// 	return PP_SUCCESS;//else PP_FAIL
 	}
-	return PP_FAIL;
+	return PP_SUCCESS;
 }
 /*<sumary>
 	</sumary>*/
@@ -293,8 +299,9 @@ int PP_Set_problem_done()
 /*<sumary>
 	</sumary>*/
 
-int PP_Abort()
+int PP_Abort(int error)
 {
-	return PP_SUCCESS;
+	MPI_Abort(lindaSpace.WORLD_COMM_DUP, error);
+	return error;
 }
 

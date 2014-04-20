@@ -15,6 +15,21 @@
 
 int my_world_rank = -1;
 
+void mydbgprintf(int flag, int linenum, const char *fmt, ...)
+{
+    char *s;
+    va_list ap;
+
+    if ( ! flag)
+        return;
+    va_start( ap, fmt );
+    vasprintf(&s, fmt, ap);
+    va_end(ap);
+    printf("%d: %d:  %s",my_world_rank,linenum,s);
+    /* fflush(stdout); */ /* already did setbuf */
+    free(s);
+}
+
 int main(int argc, char *argv[])
 {
     int rc, i, done, num_servers, work_unit_size, am_server_flag;
@@ -74,6 +89,25 @@ int main(int argc, char *argv[])
     
     
     rc = PP_Init(num_user_types,user_types,&am_server_flag);  // servers stay until end
+
+    if ( my_world_rank == MASTER_RANK )
+    {
+        num_answers = 0;
+        for (i=0; i < num_work_units; i++)
+        {
+            memset(work_unit_buf,'X',work_unit_size);
+            if (work_unit_size >= 18)
+                sprintf(work_unit_buf,"workunit %d",i);
+            rc = PP_Put( work_unit_buf, work_unit_size, WORK); 
+            if (rc != PP_SUCCESS)
+            {
+                dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );
+                PP_Abort(-1);
+            }
+        }
+        dbgprintf(1,"all work submitted after %f secs\n",MPI_Wtime()-start_job_time);
+    }
+
     PP_Finalize();
     printf("DONE\n");
     
