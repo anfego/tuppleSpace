@@ -172,12 +172,41 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			printf("PP_Reserve:\n");
 			rsvHandler.print();
 			int pp_error = PP_FAIL;
-			if( lindaSpace.reserver(rsvHandler) )
-			{
-				printf("elements found\n");
+			if( !lindaSpace.reserver(rsvHandler) )
+			{	
+				// send out the request to another server
+				printf("\tElement NOT found\n");
+				// check if all server were visited
+				if (rsvHandler.numServerVisited <= lindaSpace.my_side_size)
+				{
+					//go to next server
+					int next_server = (lindaSpace.my_side_rank+1)%lindaSpace.my_side_size;
+					addWorkType(next_server);
+					// serialize the rq and send it out
+					memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+					int req_size = rsvHandler.serializer(rq_buf);
+					MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_server[0], PP_RSV_TAG, lindaSpace.MY_SIDE_COMM);
+				}
+				else
+				{
+					// All servers queried no one have the resquest
+					rsvHandler.location_rank = -1;
+					// serialize the rq and send it out to the requester rank
+					memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
+					int req_size = rsvHandler.serializer(rq_buf);
+					MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
+				}
 			}
-			// if (handle[1] < 0) - NOT FOUD
-			MPI_Send(&pp_error,1, MPI_INT, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
+			else
+			{
+				// The element is in this server
+				rsvHandler.location_rank = lindaSpace.my_side_rank;
+				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
+				int req_size = rsvHandler.serializer(rq_buf);
+				MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
+			}
+			
+			
 		}
 		mpi_flag = 0;
 		MPI_Iprobe(MPI_ANY_SOURCE, PP_GET_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
