@@ -65,7 +65,7 @@ bool LindaContact::addServer(int server)
 {
 	if( !isServerVisited(server))
 	{
-		rq_servers.push_front(server);
+		rq_servers.push_back(server);
 		return true;
 	}
 	return false;
