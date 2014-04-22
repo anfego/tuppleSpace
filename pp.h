@@ -14,7 +14,9 @@
 #define PP_PUT_TAG			999
 #define PP_RSV_TAG			555
 #define PP_GET_TAG			333
-#define PP_WILDCARD_TYPE	-1
+#define PP_WILDCARD_TYPE	0
+#define PP_DATA_NO_FOUND	0
+#define PP_DATA_RESERVED	1
 
 /*<sumary>
 	int PP_Init()

@@ -8,6 +8,18 @@
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 #include "lindaContact.h"
 
+#define PP_SUCCESS      	1
+#define PP_FAIL         	-11	 // an error occurred
+#define PP_EXHAUSTION   	3
+#define PP_NO_MORE_WORK 	4
+#define PP_HANDLE_SIZE 		6
+#define PP_FINALIZE_TAG		666
+#define PP_PUT_TAG			999
+#define PP_RSV_TAG			555
+#define PP_GET_TAG			333
+#define PP_WILDCARD_TYPE	0
+#define PP_DATA_NO_FOUND	0
+#define PP_DATA_RESERVED	1
 using namespace std;
 
 class lindaStuff
@@ -64,6 +76,8 @@ public:
 	void 	reserver(int reserve_buf[], int handle[]);
 	bool 	reserver(LindaContact & rsvHandler);
 	void 	taker(int index, void * work_unit_buf);
+
+	void rsvRequest(MPI_Comm & RQ_COMM);
 
 };
 #endif

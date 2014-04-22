@@ -87,28 +87,46 @@ int main(int argc, char *argv[])
         am_server_flag = 0;
   
     
+    rc = PP_Init(num_user_types,user_types,am_server_flag);  // servers stay until end
     
-    rc = PP_Init(num_user_types,user_types,&am_server_flag);  // servers stay until end
-
-    if ( my_world_rank == MASTER_RANK )
+    if(!am_server_flag)
     {
-        num_answers = 0;
-        for (i=0; i < num_work_units; i++)
-        {
-            memset(work_unit_buf,'X',work_unit_size);
-            if (work_unit_size >= 18)
-                sprintf(work_unit_buf,"workunit %d",i);
-            printf("Storing: %s\n", work_unit_buf);
-            rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1); 
-            if (rc != PP_SUCCESS)
-            {
-                dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );
-                PP_Abort(-1);
-            }
+                if ( my_world_rank == MASTER_RANK )
+                {
+                    num_answers = 0;
+                    for (i=0; i < num_work_units; i++)
+                    {
+                        memset(work_unit_buf,'X',work_unit_size);
+                        if (work_unit_size >= 18)
+                            sprintf(work_unit_buf,"workunit %d",i);
+                        printf("Storing: %s\n", work_unit_buf);
+                        rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1); 
+                        if (rc != PP_SUCCESS)
+                        {
+                            dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );
+                            PP_Abort(-1);
+                        }
+                    }
+                    dbgprintf(1,"all work submitted after %f secs\n",MPI_Wtime()-start_job_time);
+                }
+                int temp = 3;
+                rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);
+                if ( rc == PP_EXHAUSTION )
+                {
+                    dbgprintf( 1, "done by exhaustion\n" );
+                    
+                }
+                else if ( rc == PP_NO_MORE_WORK )
+                {
+                    dbgprintf( 1, "done by no more work\n" );
+                    
+                }
+                else if (rc < 0)
+                {
+                    dbgprintf( 1, "** reserve failed, rc = %d\n", rc );
+                    PP_Abort(-1);
+                }
         }
-        dbgprintf(1,"all work submitted after %f secs\n",MPI_Wtime()-start_job_time);
-    }
-
     PP_Finalize();
     printf("DONE\n");
     // free(work_unit_buf);

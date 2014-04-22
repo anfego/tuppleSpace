@@ -115,7 +115,8 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 	vector<int> uTypes;
 	// create stack for user types 
 	int done = 0;
-	int mpi_flag = 0;
+	int msg_other_side = 0;
+	int msg_my_side = 0;
 	pass_struct put_struct;
 	MPI_Status status;
 	int temp_buf[2];
@@ -129,22 +130,23 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 	while(!done)
 	{
 		// checks if there is a "to finish"
-		mpi_flag = 0;
-		MPI_Iprobe(lindaSpace.other_side_leader, PP_FINALIZE_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
-		if (mpi_flag == 1)		// if true there is a message, PP_Finalize
+		msg_other_side = 0;
+		MPI_Iprobe(lindaSpace.other_side_leader, PP_FINALIZE_TAG, lindaSpace.INTER_COMM, &msg_other_side, &status);
+		if (msg_other_side == 1)		// if true there is a message, PP_Finalize
 		{
 			MPI_Recv(&done, 1, MPI_INT, lindaSpace.other_side_leader, PP_FINALIZE_TAG, lindaSpace.INTER_COMM, &status);
 
 		}
-		mpi_flag = 0;
-		MPI_Iprobe(MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
-		if( mpi_flag == 1 )//received PUT
+		msg_other_side = 0;
+		msg_my_side = 0;
+		MPI_Iprobe(MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &msg_other_side, &status);
+		if( msg_other_side == 1 )//received PUT
 		{
 			
 			MPI_Recv(rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
 			
 			LindaContact putHandler(rq_buf);
-			putHandler.print();
+			// putHandler.print();
 			
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
@@ -162,58 +164,22 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 				// MPI_Send(&resp,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM);
 			}
 		}
-		mpi_flag = 0;
-		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
-		if( mpi_flag == 1)//received reserve
+		msg_other_side = 0;
+		msg_my_side = 0;
+		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &msg_other_side, &status);
+		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.MY_SIDE_COMM, &msg_my_side, &status);
+		if( msg_other_side == 1)//received reserve
 		{
-			MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &status);
-			/*void reserver(int reserve_buf[], int handle[])*/
-			LindaContact rsvHandler(rq_buf);
-			printf("PP_Reserve:\n");
-			rsvHandler.print();
-			int pp_error = PP_FAIL;
-			if( !lindaSpace.reserver(rsvHandler) )
-			{	
-				// send out the request to another server
-				printf("\tElement NOT found\n");
-				// check if all server were visited
-				if (rsvHandler.numServerVisited() <= lindaSpace.my_side_size)
-				{
-					//go to next server
-					int next_server = (lindaSpace.my_side_rank+1)%lindaSpace.my_side_size;
-					int last_index = rsvHandler.numServerVisited();
-					rsvHandler.addServer(next_server);
-					// serialize the rq and send it out
-					memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
-					int req_size = rsvHandler.serializer(rq_buf);
-					MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_servers[last_index], PP_RSV_TAG, lindaSpace.MY_SIDE_COMM);
-				}
-				else
-				{
-					// All servers queried no one have the resquest
-					rsvHandler.location_rank = -1;
-					// serialize the rq and send it out to the requester rank
-					memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
-					int req_size = rsvHandler.serializer(rq_buf);
-					MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
-				}
-			}
-			else
-			{
-				// The element is in this server
-				rsvHandler.location_rank = lindaSpace.my_side_rank;
-				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
-				int req_size = rsvHandler.serializer(rq_buf);
-				MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
-			}
-			
-			
+			lindaSpace.rsvRequest(lindaSpace.INTER_COMM);
+		}else if (msg_my_side == 1)
+		{
+			lindaSpace.rsvRequest(lindaSpace.MY_SIDE_COMM);
 		}
-		mpi_flag = 0;
-		MPI_Iprobe(MPI_ANY_SOURCE, PP_GET_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
-		if( mpi_flag == 1)//received get
+		msg_other_side = 0;
+		MPI_Iprobe(MPI_ANY_SOURCE, PP_GET_TAG, lindaSpace.INTER_COMM, &msg_other_side, &status);
+		if( msg_other_side == 1)//received get
 		{
-			MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &status);
+			MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_GET_TAG, lindaSpace.INTER_COMM, &status);
 
 			LindaContact getHandler(rq_buf);
 			printf("PP_Get:\n");
@@ -221,8 +187,15 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			/*void taker(int index, void * work_unit_buf)*/
 			lindaSpace.taker(index, work_unit_buf);
 			int error = PP_FAIL;
+			MPI_Send(&error,1, MPI_INT, getHandler.rq_rank, PP_GET_TAG, lindaSpace.INTER_COMM);
 			
-			MPI_Send(&error,1, MPI_INT, getHandler.rq_rank, PP_RSV_TAG, lindaSpace.INTER_COMM);
+		}
+		// Requests receive from other servers
+		msg_other_side = 0;
+		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.MY_SIDE_COMM, &msg_other_side, &status);
+		if( msg_other_side == 1)
+		{
+			printf("RSV recieved from other server\n");
 		}
 	}
 	free(work_unit_buf);
@@ -240,6 +213,9 @@ int PP_Finalize()
 	int my_side_rank;
 	int my_inter_rank;
 
+	printf("(i):%d\n",lindaSpace.other_side_size);
+	sleep(1);
+
 	// wait until all app's get until this point
 	MPI_Barrier(lindaSpace.MY_SIDE_COMM);
 	if(lindaSpace.am_i_server() == false)
@@ -247,6 +223,7 @@ int PP_Finalize()
 		if(lindaSpace.my_side_rank == 0) 			// if Im rank 0 in app side do Bcast 
 		{
 			// Sends to every server a "to finish" signal
+			
 			for(int i = 0; i < lindaSpace.other_side_size; i++)
 			{
 				MPI_Send(&done,1, MPI_INT, i, PP_FINALIZE_TAG, lindaSpace.INTER_COMM);
@@ -286,7 +263,7 @@ int PP_Put(void * buffer, int size, int type, int target)
 	char reqHandler_str[HANDLER_SIZE];
 	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
 	int req_size = reqHandler.serializer(reqHandler_str);
-	reqHandler.print();
+	// reqHandler.print();
 	// printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
 	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
 	
@@ -318,7 +295,7 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 {
 	// TODO: Fix
 	MPI_Status status;
-	int pp_error = -1;
+	int pp_reservation = -1;
 	// Create a Request Handler
 	LindaContact reqHandler(lindaSpace.my_side_rank);
 	// if num_types_rq == 0 do PP_WILDCARD_TYPE
@@ -326,34 +303,45 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 		for (int i = 0; i < num_types_rq; ++i)
 		{
 			int type = *(types+i);
-			printf("\t\tTyped to add: %d\n",type);
+			// printf("\t\tTyped to add: %d\n",type);
 			reqHandler.addWorkType(type);
 		}
 	else
 			reqHandler.addWorkType(PP_WILDCARD_TYPE);
 
 
-	printf("num_types: %d\n", reqHandler.numWorkTypes());
+	// printf("num_types: %d\n", reqHandler.numWorkTypes());
 	
 	int picked_server = rand()%lindaSpace.other_side_size;
 	reqHandler.addServer(picked_server);
-	reqHandler.print();
+	// reqHandler.print();
 	
 	// Send the request to the chosen server
 	char reqHandler_str[HANDLER_SIZE];
 	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
 	int req_size = reqHandler.serializer(reqHandler_str);
-
 	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_RSV_TAG, lindaSpace.INTER_COMM);
 	
-	MPI_Recv(&pp_error, 1, MPI_INT, picked_server, PP_RSV_TAG, lindaSpace.INTER_COMM, &status);
-	
-	if (pp_error == PP_FAIL)
+	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
+	// Recieve the answer
+	MPI_Recv(reqHandler_str, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &status);
+	reqHandler.deserializer(reqHandler_str);
+
+	if (reqHandler.location_rank == -1)
 	{
 		// Retry?
 		printf("Not found?: %d\n",picked_server);
+		pp_reservation = PP_NO_MORE_WORK;
 
 	}
+	else
+	{
+		printf("Thanks\n");
+		pp_reservation = PP_SUCCESS;
+		*size_found = reqHandler.size;
+		*type_found = reqHandler.types[0];
+	}
+	return pp_reservation;
 
 }
 /*<sumary>
