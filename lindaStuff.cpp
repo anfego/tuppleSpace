@@ -150,6 +150,7 @@ using namespace std;
 
 			}
 		}
+		printf("reserver says not found !\n");
 		// not found
 		return false;
 	}

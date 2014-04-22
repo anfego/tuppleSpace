@@ -140,7 +140,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 		MPI_Iprobe(MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
 		if( mpi_flag == 1 )//received PUT
 		{
-			
+			cout << "I am " << my_side_rank<<" got a put request\n";
 			MPI_Recv(rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
 			
 			LindaContact putHandler(rq_buf);
@@ -166,6 +166,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &mpi_flag, &status);
 		if( mpi_flag == 1)//received reserve
 		{
+			cout << "I am " << my_side_rank<<" got a reserve request\n";
 			MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.INTER_COMM, &status);
 			/*void reserver(int reserve_buf[], int handle[])*/
 			LindaContact rsvHandler(rq_buf);
@@ -206,6 +207,8 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			else
 			{
 				// The element is in this server
+				
+				cout << "Element found !!  " << endl;
 				rsvHandler.location_rank = lindaSpace.my_side_rank;
 				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
 				int req_size = rsvHandler.serializer(rq_buf);
