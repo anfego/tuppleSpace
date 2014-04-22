@@ -68,6 +68,7 @@ public:
 	bool 	reserver(LindaContact & rsvHandler);
 	void 	taker(int index, void * work_unit_buf);
 	int 	getLocalIndex(int index);
+	int 	getGlobalIndex(int index);
 
 };
 #endif

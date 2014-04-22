@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
             memset(work_unit_buf,'X',work_unit_size);
             if (work_unit_size >= 18)
                 sprintf(work_unit_buf,"workunit %d",i);
-            rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1 ); 
+            rc = PP_Put( work_unit_buf, work_unit_size, WORK, 18 ); 
             if (rc != PP_SUCCESS)
             {
                 dbgprintf( 1, "**** failed: put work_unit %d  rc %d\n", i, rc );

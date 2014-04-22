@@ -63,7 +63,7 @@ using namespace std;
 			tempNode.size = size;
 			tempNode.reserved = false;
 			tempNode.index = index++;
-			tMemory.target = target;
+			tempNode.target = target;
 			
 
 			myNodes.push_back(tempNode);
@@ -172,12 +172,17 @@ using namespace std;
 			printData(i);
 		}
 	}
+	
 	int lindaStuff::getLocalIndex(int index)
-{
-	for (int i = 0; i < myNodes.count; ++i)
 	{
-		if(myNodes[i].index == index)
-			return i;
+		for (int i = 0; i < myNodes.size(); ++i)
+		{
+			if(myNodes[i].index == index)
+				return i;
+		}
+		return -1;
 	}
-	return -1;
-}
+	int lindaStuff::getGlobalIndex(int index)
+	{
+		return myNodes[index].index;
+	}
