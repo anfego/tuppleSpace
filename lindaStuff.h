@@ -62,7 +62,7 @@ public:
 	int 	get_comm_linda(MPI_Comm *comm_in);
 	int 	am_i_server();
 	void 	set_as_server();
-	int 	allocate(int size, int type);
+	int 	allocate(int size, int type, int target);
 	void 	store(void *work_unit_buf, int &index);
 	void 	reserver(int reserve_buf[], int handle[]);
 	bool 	reserver(LindaContact & rsvHandler);

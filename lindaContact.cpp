@@ -16,10 +16,10 @@ LindaContact::LindaContact(char * serial)
 {
 	deserializer(serial);
 }
-LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_work, int server)
+LindaContact::LindaContact(int myRank, int dataID, int size_of_work, int type_of_work, int server)
 {	
 	rq_rank = myRank;
-	data_id = dataID;
+	data_id = lindaStuff::myNodes[dataID].index;
 	size = size_of_work;
 	target_rank = -1;
 	location_rank = -1;

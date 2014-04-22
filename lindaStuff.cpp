@@ -51,7 +51,7 @@ using namespace std;
 		server = 1;
 	}
 
-	int lindaStuff::allocate(int size, int type)
+	int lindaStuff::allocate(int size, int type, int target)
 	{
 		node tempNode;
 		// Allocates size +1 to ensure NULL ended
@@ -63,6 +63,7 @@ using namespace std;
 			tempNode.size = size;
 			tempNode.reserved = false;
 			tempNode.index = index++;
+			tMemory.target = target;
 			
 
 			myNodes.push_back(tempNode);
@@ -97,6 +98,7 @@ using namespace std;
 					handle[1]/*.ID*/			= i;
 					handle[2]/*.size_of_work*/	= myNodes[i].size;
 					handle[3]/*.type_of_work*/	= myNodes[i].type;
+					handle[4]/*.type_of_work*/	= myNodes[i].index;
 					return;
 				}
 			}
@@ -134,7 +136,7 @@ using namespace std;
 			for (int j = 0; j < rsvHandler.types.size(); ++j)
 			{
 				//TODO: Add target validation
-				if (!myNodes[i].reserved && ( rsvHandler.types[j] == -1 || myNodes[i].type == rsvHandler.types[j]))
+				if ( (myNodes[i].index == rsvHandler.data_id || myNodes[i].index == -1 ) && !myNodes[i].reserved && ( rsvHandler.types[j] == -1 || myNodes[i].type == rsvHandler.types[j]))
 				{
 					printf("reserved\n");
 					myNodes[i].reserved = true;

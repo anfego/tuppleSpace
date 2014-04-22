@@ -149,7 +149,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
-			resp = lindaSpace.allocate(putHandler.size, putHandler.types[0] );
+			resp = lindaSpace.allocate(putHandler.size, putHandler.types[0], putHandler.data_id);
 
 			MPI_Send(&resp,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM);
 			//get the datapp
@@ -280,7 +280,6 @@ int PP_Put(void * buffer, int size, int type, int target)
 	reqHandler.addServer(picked_server);
 	
 	int pp_error = -1;
-	MPI_Status status;
 
 	// Send the request to the chosen server
 	char reqHandler_str[HANDLER_SIZE];
@@ -291,11 +290,7 @@ int PP_Put(void * buffer, int size, int type, int target)
 	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
 	
 	MPI_Recv(&pp_error, 1, MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-	// if (status.MPI_ERROR != MPI_SUCCESS)
-	// {
-	// 	PP_Abort(PP_FAIL);
-	// 	return PP_FAIL;
-	// }
+
 	if (pp_error == PP_FAIL)
 	{
 		// Retry?
