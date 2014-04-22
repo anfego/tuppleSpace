@@ -116,6 +116,7 @@ using namespace std;
 							handle[1]/*.ID*/			= i;
 							handle[2]/*.size_of_work*/	= myNodes[i].size;
 							handle[3]/*.type_of_work*/	= myNodes[i].type;
+							handle[4]					= myNodes[i].index;
 							return;
 						}
 					}

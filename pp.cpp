@@ -317,7 +317,6 @@ int PP_Put(void * buffer, int size, int type, int target)
 int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found, int * handle)
 {
 	// TODO: Fix
-	MPI_Status status;
 	int pp_error = -1;
 	// Create a Request Handler
 	LindaContact reqHandler(lindaSpace.my_side_rank);
@@ -330,7 +329,7 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 			reqHandler.addWorkType(type);
 		}
 	else
-			reqHandler.addWorkType(PP_WILDCARD_TYPE);
+		reqHandler.addWorkType(PP_WILDCARD_TYPE);
 
 
 	printf("num_types: %d\n", reqHandler.numWorkTypes());
