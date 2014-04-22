@@ -3,6 +3,7 @@
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
 
 
+
 using namespace std;
 
 	// Default ructor
@@ -67,7 +68,7 @@ using namespace std;
 			
 
 			myNodes.push_back(tempNode);
-			printf("\tMemory allocated: %s\n\tNode size: %d\n",(char *)tempNode.memory, myNodes.size());
+			// printf("\tMemory allocated: %s\n\tNode size: %d\n",(char *)tempNode.memory, myNodes.size());
 			return (myNodes.size()-1);//index
 		}
 		return -1;
@@ -131,12 +132,18 @@ using namespace std;
 	}
 	bool lindaStuff::reserver(LindaContact & rsvHandler)
 	{
+		printf("\tmyNodes size: %d",myNodes.size());
 		for (int i = 0; i < myNodes.size(); ++i)
 		{
 			for (int j = 0; j < rsvHandler.types.size(); ++j)
 			{
+				printf("\tquery type: %d agains %d\n", rsvHandler.types[j], myNodes[i].type);
 				//TODO: Add target validation
+<<<<<<< HEAD
 				if ( (myNodes[i].index == rsvHandler.data_id || myNodes[i].index == -1 ) && !myNodes[i].reserved && ( rsvHandler.types[j] == -1 || myNodes[i].type == rsvHandler.types[j]))
+=======
+				if (!myNodes[i].reserved && ( rsvHandler.types[j] == 0 || myNodes[i].type == rsvHandler.types[j]))
+>>>>>>> origin/PP_Reserve
 				{
 					printf("reserved\n");
 					myNodes[i].reserved = true;
@@ -173,6 +180,7 @@ using namespace std;
 			printData(i);
 		}
 	}
+<<<<<<< HEAD
 	
 	int lindaStuff::getLocalIndex(int index)
 	{
@@ -187,3 +195,56 @@ using namespace std;
 	{
 		return myNodes[index].index;
 	}
+=======
+	void lindaStuff::rsvRequest(MPI_Comm &RQ_COMM)
+	{
+		char rq_buf[HANDLER_SIZE];
+		memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+		MPI_Status status;
+		
+		MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, RQ_COMM, &status);
+		/*void reserver(int reserve_buf[], int handle[])*/
+		LindaContact rsvHandler(rq_buf);
+		printf("PP_Reserve:\n");
+		rsvHandler.print();
+		int pp_error = PP_FAIL;
+		if( !reserver(rsvHandler) )
+		{	
+			// send out the request to another server
+			printf("\tElement NOT found\n");
+			// check if all server were visited
+			if (rsvHandler.numServerVisited() < my_side_size )
+			{
+				int last_index = rsvHandler.numServerVisited();
+				//go to next server
+				int next_server = (my_side_rank+1)%my_side_size;
+				rsvHandler.addServer(next_server);
+				printf("RSV next server: %d my_side_size %d\n", rsvHandler.rq_servers[last_index], my_side_size);
+				// serialize the rq and send it out
+				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+				int req_size = rsvHandler.serializer(rq_buf);
+				MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_servers[last_index], PP_RSV_TAG, MY_SIDE_COMM);
+			}
+			else
+			{
+				printf("// All servers queried no one have the resquest\n");
+				rsvHandler.location_rank = -1;
+				// serialize the rq and send it out to the requester rank
+				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
+				int req_size = rsvHandler.serializer(rq_buf);
+				MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
+			}
+		}
+		else
+		{
+			// The element is in this server
+			rsvHandler.location_rank = my_side_rank;
+			memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
+			int req_size = rsvHandler.serializer(rq_buf);
+			printf("element found sending back--->%d\n",rsvHandler.rq_rank);
+			rsvHandler.print();
+			// MPI_Send(&resp,1,MPI_INT, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.RQ_COMM);
+			MPI_Send(rq_buf, req_size, MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
+		}
+	}
+>>>>>>> origin/PP_Reserve
