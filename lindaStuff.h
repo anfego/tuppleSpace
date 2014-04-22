@@ -24,7 +24,9 @@ private:
 		bool reserved;
 		void* memory;
 		int size;
+		int index;
 	};
+	int index;
 	vector<node> myNodes;
 	void printData(int);
 	void printAllData();
@@ -64,6 +66,7 @@ public:
 	void 	reserver(int reserve_buf[], int handle[]);
 	bool 	reserver(LindaContact & rsvHandler);
 	void 	taker(int index, void * work_unit_buf);
+	int 	getLocalIndex(int index);
 
 };
 #endif

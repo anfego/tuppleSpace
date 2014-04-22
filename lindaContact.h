@@ -35,6 +35,7 @@ public:
 	int numServerVisited();
 	int serializeTypeVector(char *);
 	int serializeServerVector(char *);
+	int getLocalIndex(int index);
 	std::vector<int> deserializeVector(int, char *);
 	/* data */
 	int rq_rank;

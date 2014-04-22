@@ -9,6 +9,7 @@ using namespace std;
 	lindaStuff::lindaStuff()
 	{
 		server = 0;
+		index = 0;
 	}
 	// Constructor
 	lindaStuff::lindaStuff( int am_server )
@@ -61,6 +62,7 @@ using namespace std;
 			tempNode.type = type;
 			tempNode.size = size;
 			tempNode.reserved = false;
+			tempNode.index = index++;
 			
 
 			myNodes.push_back(tempNode);
@@ -72,7 +74,8 @@ using namespace std;
 	void lindaStuff::store(void *work_unit_buf, int &index)
 	{
 		// store data in allocated memory
-		memcpy(myNodes[index].memory, work_unit_buf, myNodes[index].size*sizeof(char));
+		int local_index = getLocalIndex(index);
+		memcpy(myNodes[local_index].memory, work_unit_buf, myNodes[local_index].size*sizeof(char));
 		// Ensure Null Ended Data
 		// memset(myNodes[index].memory+myNodes[index].size,'\0',1);
 		printData(index);
@@ -166,3 +169,12 @@ using namespace std;
 			printData(i);
 		}
 	}
+	int lindaStuff::getLocalIndex(int index)
+{
+	for (int i = 0; i < myNodes.count; ++i)
+	{
+		if(myNodes[i].index == index)
+			return i;
+	}
+	return -1;
+}
