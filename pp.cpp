@@ -76,7 +76,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 	//work_unit_size IS NOT PASSED !!!!!!!!!!!!!!!!!!!!!
 	int work_unit_size = 1000000;
 
-	void * work_unit_buf = malloc(work_unit_size);
+	void * work_unit_buf;
 
 	// store usefull information
 	lindaSpace.my_world_rank = my_world_rank;
@@ -157,11 +157,11 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			//get the datapp
 			if (resp != PP_FAIL)
 			{
+				work_unit_buf = malloc(putHandler.size*sizeof(char));
 				MPI_Recv(work_unit_buf, putHandler.size, MPI_CHAR, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
 				//put in allocated space
 				lindaSpace.store(work_unit_buf, resp);
-				// resp = PP_SUCCESS;
-				// MPI_Send(&resp,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM);
+				free(work_unit_buf);
 			}
 		}
 		msg_other_side = 0;
@@ -190,15 +190,9 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			MPI_Send(&error,1, MPI_INT, getHandler.rq_rank, PP_GET_TAG, lindaSpace.INTER_COMM);
 			
 		}
-		// Requests receive from other servers
-		msg_other_side = 0;
-		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.MY_SIDE_COMM, &msg_other_side, &status);
-		if( msg_other_side == 1)
-		{
-			printf("RSV recieved from other server\n");
-		}
+
 	}
-	free(work_unit_buf);
+	
 	printf("tuppleSpace Exit\n");
 	return PP_SUCCESS;	
 }
@@ -212,9 +206,6 @@ int PP_Finalize()
 	int done = 1;
 	int my_side_rank;
 	int my_inter_rank;
-
-	printf("(i):%d\n",lindaSpace.other_side_size);
-	sleep(1);
 
 	// wait until all app's get until this point
 	MPI_Barrier(lindaSpace.MY_SIDE_COMM);

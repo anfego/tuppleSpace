@@ -10,11 +10,13 @@ using namespace std;
 	lindaStuff::lindaStuff()
 	{
 		server = 0;
+		key = 0;
 	}
 	// Constructor
 	lindaStuff::lindaStuff( int am_server )
 	{
 		server = am_server;
+		key = 0;
 	}
 
 	lindaStuff::~lindaStuff()
@@ -62,11 +64,10 @@ using namespace std;
 			tempNode.type = type;
 			tempNode.size = size;
 			tempNode.reserved = false;
-			
-
+			tempNode.id = key++;
 			myNodes.push_back(tempNode);
 			// printf("\tMemory allocated: %s\n\tNode size: %d\n",(char *)tempNode.memory, myNodes.size());
-			return (myNodes.size()-1);//index
+			return tempNode.id;//index
 		}
 		return -1;
 	}
@@ -79,51 +80,7 @@ using namespace std;
 		printData(index);
 	}
 
-	void lindaStuff::reserver(int rq_buf[], int handle[])
-	{
-		int i = 0;
-		memset(handle, '\0', 4*sizeof(int));
-		if(rq_buf[0] == 0) //then just take first one
-		{
-			for (; i < myNodes.size(); ++i)
-			{
-				if ( !myNodes[i].reserved )
-				{
-					myNodes[i].reserved = true;
-					// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!--
-					handle[0]/*.rank*/			= my_world_rank; // <<<<<=======<<<<
-					handle[1]/*.ID*/			= i;
-					handle[2]/*.size_of_work*/	= myNodes[i].size;
-					handle[3]/*.type_of_work*/	= myNodes[i].type;
-					return;
-				}
-			}
-		}
-		else
-		{	// go while particular not found
-			for (; i < myNodes.size(); ++i)
-			{
-				if ( !myNodes[i].reserved )
-				{
-					for (int j = 1; j < rq_buf[0]; ++i)
-					{
-						if(myNodes[i].type == rq_buf[j])
-						{
-							myNodes[i].reserved = true;
-							handle[0]/*.rank*/			= my_world_rank; 
-							handle[1]/*.ID*/			= i;
-							handle[2]/*.size_of_work*/	= myNodes[i].size;
-							handle[3]/*.type_of_work*/	= myNodes[i].type;
-							return;
-						}
-					}
-				}
-			}
-		}
-		
-		if(i == rq_buf[0])
-			handle[1] = -1;
-	}
+
 	bool lindaStuff::reserver(LindaContact & rsvHandler)
 	{
 		printf("\tmyNodes size: %d",myNodes.size());
@@ -141,6 +98,7 @@ using namespace std;
 					rsvHandler.size = myNodes[i].size;
 					rsvHandler.clcWorkTypes();
 					rsvHandler.addWorkType(myNodes[i].type);
+					rsvHandler.data_id = myNodes[i].id;
 					return true;
 
 				}	

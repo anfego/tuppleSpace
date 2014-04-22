@@ -25,18 +25,16 @@ using namespace std;
 class lindaStuff
 {
 private:
-	int type;
-	bool reserved;
-	int reserved_by;
-	int data;
-	//TODO: Add target suport
 	struct node
 	{
 		int type;
 		bool reserved;
 		void* memory;
 		int size;
+		int target;
+		int id;
 	};
+	int key;
 	vector<node> myNodes;
 	void printData(int);
 	void printAllData();
@@ -73,8 +71,8 @@ public:
 	void 	set_as_server();
 	int 	allocate(int size, int type);
 	void 	store(void *work_unit_buf, int &index);
-	void 	reserver(int reserve_buf[], int handle[]);
 	bool 	reserver(LindaContact & rsvHandler);
+	void 	reserver(int reserve_buf[], int handle[]);
 	void 	taker(int index, void * work_unit_buf);
 
 	void rsvRequest(MPI_Comm & RQ_COMM);
