@@ -25,6 +25,7 @@ private:
 		void* memory;
 		int size;
 		int index;
+		int target;
 	};
 	int index;
 	vector<node> myNodes;
