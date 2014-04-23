@@ -171,6 +171,7 @@ int main(int argc, char *argv[])
         {
             num_answers++;
             if (num_answers >= num_work_units)
+                dbgprintf( 1, "getting num_answers\n" );
                 PP_Set_problem_done();
         }
         else

@@ -74,9 +74,8 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 	MPI_Comm_rank(lindaSpace.MY_SIDE_COMM,&my_side_rank);
 	MPI_Comm_size(lindaSpace.MY_SIDE_COMM,&my_side_size);
 	//work_unit_size IS NOT PASSED !!!!!!!!!!!!!!!!!!!!!
-	int work_unit_size = 1000000;
-
-	void * work_unit_buf;
+	
+	char * work_unit_buf;
 
 	// store usefull information
 	lindaSpace.my_world_rank = my_world_rank;
@@ -112,20 +111,26 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 		return PP_SUCCESS;
 	}
 
-	vector<int> uTypes;
 	// create stack for user types 
 	int done = 0;
 	int msg_other_side = 0;
 	int msg_my_side = 0;
-	pass_struct put_struct;
+
 	MPI_Status status;
+
 	int temp_buf[2];
 	int reserve_buf[num_user_types+1];//+1because first is number of elements is array
+
 	int handle[4];
+
 	int index;
+
 	int resp;
+
 	int ack;
+
 	char rq_buf[HANDLER_SIZE];
+
 	memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
 	while(!done)
 	{
@@ -144,26 +149,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 		if( msg_other_side == 1 )//received PUT
 		{
 			
-			MPI_Recv(rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-			
-			LindaContact putHandler(rq_buf);
-			// putHandler.print();
-			
-			// if(type_rec == good rec) - receive
-			// resp is index in vector, never can be less than zero
-			/*int allocate(int &size, int &type)*/
-			resp = lindaSpace.allocate(putHandler);
-
-			MPI_Send(&resp,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM);
-			//get the datapp
-			if (resp != PP_FAIL)
-			{
-				work_unit_buf = malloc(putHandler.size*sizeof(char));
-				MPI_Recv(work_unit_buf, putHandler.size, MPI_CHAR, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);
-				//put in allocated space
-				lindaSpace.store(work_unit_buf, resp);
-				free(work_unit_buf);
-			}
+			lindaSpace.putRequest();
 		}
 		msg_other_side = 0;
 		msg_my_side = 0;
@@ -317,13 +303,13 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 	if (reqHandler.location_rank == -1)
 	{
 		// Retry?
-		printf("Not found?: %d\n",picked_server);
+		// printf("Not found?: %d\n",picked_server);
 		pp_reservation = PP_NO_MORE_WORK;
 
 	}
 	else
 	{
-		printf("Thanks\n");
+		// printf("Thanks\n");
 		pp_reservation = PP_SUCCESS;
 		*size_found = reqHandler.size;
 		*type_found = reqHandler.types[0];

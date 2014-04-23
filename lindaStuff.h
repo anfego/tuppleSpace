@@ -13,7 +13,7 @@
 #define PP_EXHAUSTION   	3
 #define PP_NO_MORE_WORK 	4
 #define PP_HANDLE_SIZE 		6
-#define PP_MAX_RQ	 		600
+#define PP_MAX_RQ	 		20000
 #define PP_FINALIZE_TAG		666
 #define PP_PUT_TAG			999
 #define PP_RSV_TAG			555
@@ -81,7 +81,8 @@ public:
 
 	void rsvRequest(MPI_Comm & RQ_COMM);
 	int getRequest(MPI_Comm & RQ_COMM);
-	
+	int putRequest();
+
 	int getData(void * bufferOut, int handle);
 	
 	int findEmptyHandler();

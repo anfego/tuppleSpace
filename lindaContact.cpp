@@ -24,7 +24,7 @@ LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_
 	location_rank = -1;
 	LindaContact::addWorkType(type_of_work);
 	LindaContact::addServer(server);
-	used = 1; 
+	used = 0; 
 	
 }
 

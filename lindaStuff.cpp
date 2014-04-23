@@ -148,46 +148,17 @@ using namespace std;
 		MPI_Status status;
 		if (RQ_COMM == INTER_COMM)
 		{
-			printf("NUM RQ: %d\n",++numRsv);
-			
+			// printf("NUM RQ: %d\n",++numRsv);
+			++numRsv;
 		}
 			
 		
 		MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, RQ_COMM, &status);
-		/*void reserver(int reserve_buf[], int handle[])*/
+		
 		LindaContact rsvHandler(rq_buf);
-		// printf("PP_Reserve:\n");
-		// rsvHandler.print();
 		int pp_error = PP_FAIL;
 		if( !reserver(rsvHandler) )
 		{	
-			// send out the request to another server
-			// printf("\tElement NOT found\n");
-			
-			// check if all server were visited
-			// if (rsvHandler.numServerVisited() < my_side_size )
-			// {
-				// Non Blocking reserve
-				// int last_index = rsvHandler.numServerVisited();
-				// //go to next server
-				// int next_server = (my_side_rank+1)%my_side_size;
-				// rsvHandler.addServer(next_server);
-				// printf("RSV next server: %d my_side_size %d\n", rsvHandler.rq_servers[last_index], my_side_size);
-				// // serialize the rq and send it out
-				// memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
-				// int req_size = rsvHandler.serializer(rq_buf);
-				// MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_servers[last_index], PP_RSV_TAG, MY_SIDE_COMM);
-			// }
-			// else
-			// {
-			// 	printf("// All servers queried no one have the resquest\n");
-			// 	rsvHandler.location_rank = -1;
-			// 	// serialize the rq and send it out to the requester rank
-			// 	memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
-			// 	int req_size = rsvHandler.serializer(rq_buf);
-			// 	MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
-			// }
-			
 			//go to next server
 			if (my_side_size > 1)
 			{
@@ -214,7 +185,7 @@ using namespace std;
 	{
 		for (int i = 0; i < PP_MAX_RQ; ++i)
 		{
-			printf("array %d: %d\n", i, lindaHandler[i].used);
+			// printf("array %d: %d\n", i, lindaHandler[i].used);
 			if (lindaHandler[i].used == 0)
 			{
 				return i;
@@ -291,5 +262,33 @@ using namespace std;
 			// printf("DATA OUT %s\n", (char *)myNodes[index].memory );
 			MPI_Send((char *)myNodes[index].memory, getHandler.size, MPI_CHAR, getHandler.rq_rank, PP_GET_TAG, RQ_COMM);
 			myNodes.erase(myNodes.begin()+index);
+			return PP_SUCCESS;
 		}
 	}
+	int lindaStuff::putRequest()
+	{
+		char rq_buf[HANDLER_SIZE];
+
+		memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+
+		MPI_Status status;
+		
+		MPI_Recv(rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_PUT_TAG, INTER_COMM, &status);
+			
+		LindaContact putHandler(rq_buf);
+		int put_status = allocate(putHandler);
+
+		MPI_Send(&put_status,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, INTER_COMM);
+		//get the datapp
+		if (put_status != PP_FAIL)
+		{
+			// work_unit_buf = (char *)malloc(putHandler.size*sizeof(char));
+			MPI_Recv((char *)myNodes[myNodes.size()-1].memory, putHandler.size, MPI_CHAR, putHandler.rq_rank, PP_PUT_TAG, INTER_COMM, &status);
+				//put in allocated space
+				// lindaSpace.store(work_unit_buf, resp);
+				// free(work_unit_buf);
+			return PP_SUCCESS;
+		}
+		return PP_FAIL;
+	}
+	
