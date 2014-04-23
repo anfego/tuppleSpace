@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
+#include "mpi.h"
 #include "pp.h"
 
 #define WORK             1
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
         {
             num_answers++;
             if (num_answers >= num_work_units)
-		PP_Set_problem_done();
+                PP_Set_problem_done();
         }
         else
         {

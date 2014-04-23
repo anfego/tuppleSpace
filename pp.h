@@ -66,7 +66,7 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 		void *buf;
 		int handle[];  // from prior Reserve
 	</sumary>*/
-int PP_Get(void *work_unit_buf, int handler[]);
+int PP_Get(void *work_unit_buf, int * handler);
 
 /*<sumary>
 	int PP_Set_problem_done()

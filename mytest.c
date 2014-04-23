@@ -114,16 +114,17 @@ int main(int argc, char *argv[])
                 if(my_world_rank == MASTER_RANK)
                 {   
                     printf("Reserving WORK !!! !\n"); 
-                    rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1); 
+                    rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);
                     sleep(2);
+                    memset(work_unit_buf,'\0',work_unit_size);
+                    rc = PP_Get( work_unit_buf, work_handle );
+                    printf("GETING WORK %s!!! !\n",work_unit_buf); 
                 }
                 else
                 {
-                    memset(work_unit_buf,'X',work_unit_size);
                     sleep(2);
-                    rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);
                     // sleep(1);
-                    printf("Putting WORK !!! !\n"); 
+                    rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1); 
                     
                     // temp = 0;
                     // rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);

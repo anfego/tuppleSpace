@@ -121,8 +121,8 @@ void LindaContact::print()
 	char buf[HANDLER_SIZE];
 	memset(buf,'\0',HANDLER_SIZE*sizeof(char));
 	serializer(buf);
-	printf("\tLinda Handler: rK  Id  Sz  lR  tR   Ty   Sr\n");
-	printf("\tLinda Handler: %s\n",buf);
+	// printf("\tLinda Handler: rK  Id  Sz  lR  tR   Ty   Sr\n");
+	// printf("\tLinda Handler: %s\n",buf);
 }
 
 int LindaContact::serializeTypeVector(char * buf)

@@ -13,6 +13,7 @@
 #define PP_EXHAUSTION   	3
 #define PP_NO_MORE_WORK 	4
 #define PP_HANDLE_SIZE 		6
+#define PP_MAX_RQ	 		600
 #define PP_FINALIZE_TAG		666
 #define PP_PUT_TAG			999
 #define PP_RSV_TAG			555
@@ -36,7 +37,6 @@ private:
 		int id;
 	};
 	int key;
-	LindaContact lindaHandler[PP_HANDLE_SIZE];
 	vector<node> myNodes;
 	void printData(int);
 	void printAllData();
@@ -44,6 +44,7 @@ private:
 	
 
 public:
+	LindaContact lindaHandler[PP_MAX_RQ];
 	// Default constructor
 	int server;
 	
@@ -76,11 +77,15 @@ public:
 	void 	store(void *work_unit_buf, int &index);
 	bool 	reserver(LindaContact & rsvHandler);
 	void 	reserver(int reserve_buf[], int handle[]);
-	void 	taker(int index, void * work_unit_buf);
+	int 	taker(int id, void * work_unit_buf);
 
 	void rsvRequest(MPI_Comm & RQ_COMM);
+	int getRequest(MPI_Comm & RQ_COMM);
+	
+	int getData(void * bufferOut, int handle);
+	
 	int findEmptyHandler();
 	void storeHandler(int index, LindaContact & rsqHandler);
-
+	int findNodeById(int id);
 };
 #endif
