@@ -36,7 +36,7 @@ private:
 		int id;
 	};
 	int key;
-	LindaContact lindaHandle[PP_HANDLE_SIZE];
+	LindaContact lindaHandler[PP_HANDLE_SIZE];
 	vector<node> myNodes;
 	void printData(int);
 	void printAllData();
@@ -79,6 +79,8 @@ public:
 	void 	taker(int index, void * work_unit_buf);
 
 	void rsvRequest(MPI_Comm & RQ_COMM);
+	int findEmptyHandler();
+	void storeHandler(int index, LindaContact & rsqHandler);
 
 };
 #endif

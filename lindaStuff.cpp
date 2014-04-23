@@ -12,6 +12,7 @@ using namespace std;
 		server = 0;
 		key = 0;
 		numRsv = 0;
+
 	}
 	// Constructor
 	lindaStuff::lindaStuff( int am_server )
@@ -204,3 +205,26 @@ using namespace std;
 			MPI_Send(rq_buf, req_size, MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
 		}
 	}
+	int lindaStuff::findEmptyHandler()
+	{
+		for (int i = 0; i < PP_HANDLE_SIZE; ++i)
+		{
+			if (lindaHandler[i].used == 0)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+	void lindaStuff::storeHandler(int index, LindaContact & rqHandler)
+	{
+		lindaHandler[index].used = 1;
+		lindaHandler[index].rq_rank = rqHandler.rq_rank;
+		lindaHandler[index].data_id = rqHandler.data_id;
+		lindaHandler[index].location_rank = rqHandler.location_rank;
+		lindaHandler[index].target_rank = rqHandler.target_rank;
+		lindaHandler[index].size = rqHandler.size;
+		lindaHandler[index].types = rqHandler.types;
+		lindaHandler[index].rq_servers = rqHandler.rq_servers;
+	}
+

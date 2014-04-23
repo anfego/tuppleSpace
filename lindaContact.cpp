@@ -9,7 +9,7 @@ LindaContact::LindaContact()
 	rq_rank = 0;
 	data_id = 0;
 	size = 0;
-	used = 0
+	used = 0;
 }
 LindaContact::LindaContact(char * serial)
 {
