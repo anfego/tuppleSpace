@@ -335,6 +335,18 @@ int PP_Reserve(int num_types_rq, int * types, int * size_found, int * type_found
 		pp_reservation = PP_SUCCESS;
 		*size_found = reqHandler.size;
 		*type_found = reqHandler.types[0];
+		int new_rq_hander_index = 0;
+		new_rq_hander_index = lindaSpace.findEmptyHandler();
+		if (new_rq_hander_index != -1)
+		{
+			lindaSpace.storeHandler(new_rq_hander_index, reqHandler);
+			*handle = new_rq_hander_index;
+		}
+		else
+		{
+			return PP_FAIL;
+		}
+
 	}
 	return pp_reservation;
 

@@ -192,7 +192,6 @@ using namespace std;
 				int req_size = rsvHandler.serializer(rq_buf);
 				MPI_Send(rq_buf,req_size,MPI_CHAR, next_server, PP_RSV_TAG, MY_SIDE_COMM);
 			}
-
 		}
 		else
 		{
