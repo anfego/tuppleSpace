@@ -11,12 +11,14 @@ using namespace std;
 	{
 		server = 0;
 		key = 0;
+		numRsv = 0;
 	}
 	// Constructor
 	lindaStuff::lindaStuff( int am_server )
 	{
 		server = am_server;
 		key = 0;
+		numRsv = 0;
 	}
 
 	lindaStuff::~lindaStuff()
@@ -127,7 +129,7 @@ using namespace std;
 			printData(i);
 		}
 	}
-	void lindaStuff::rsvRequest(MPI_Comm &RQ_COMM)
+	void lindaStuff::rsvRequest(MPI_Comm &RQ_COMM, int other_side_rq)
 	{
 		char rq_buf[HANDLER_SIZE];
 		memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
@@ -143,28 +145,39 @@ using namespace std;
 		{	
 			// send out the request to another server
 			printf("\tElement NOT found\n");
+			
 			// check if all server were visited
-			if (rsvHandler.numServerVisited() < my_side_size )
-			{
-				int last_index = rsvHandler.numServerVisited();
-				//go to next server
-				int next_server = (my_side_rank+1)%my_side_size;
-				rsvHandler.addServer(next_server);
-				printf("RSV next server: %d my_side_size %d\n", rsvHandler.rq_servers[last_index], my_side_size);
-				// serialize the rq and send it out
-				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
-				int req_size = rsvHandler.serializer(rq_buf);
-				MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_servers[last_index], PP_RSV_TAG, MY_SIDE_COMM);
-			}
-			else
-			{
-				printf("// All servers queried no one have the resquest\n");
-				rsvHandler.location_rank = -1;
-				// serialize the rq and send it out to the requester rank
-				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
-				int req_size = rsvHandler.serializer(rq_buf);
-				MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
-			}
+			// if (rsvHandler.numServerVisited() < my_side_size )
+			// {
+				// Non Blocking reserve
+				// int last_index = rsvHandler.numServerVisited();
+				// //go to next server
+				// int next_server = (my_side_rank+1)%my_side_size;
+				// rsvHandler.addServer(next_server);
+				// printf("RSV next server: %d my_side_size %d\n", rsvHandler.rq_servers[last_index], my_side_size);
+				// // serialize the rq and send it out
+				// memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+				// int req_size = rsvHandler.serializer(rq_buf);
+				// MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_servers[last_index], PP_RSV_TAG, MY_SIDE_COMM);
+			// }
+			// else
+			// {
+			// 	printf("// All servers queried no one have the resquest\n");
+			// 	rsvHandler.location_rank = -1;
+			// 	// serialize the rq and send it out to the requester rank
+			// 	memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char)); 
+			// 	int req_size = rsvHandler.serializer(rq_buf);
+			// 	MPI_Send(rq_buf,req_size,MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
+			// }
+			
+			//go to next server
+			int next_server = (my_side_rank+1)%my_side_size;
+			printf("RSV next server: %d my_side_size %d\n", next_server, my_side_size);
+			// serialize the rq and send it out
+			memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+			int req_size = rsvHandler.serializer(rq_buf);
+			MPI_Send(rq_buf,req_size,MPI_CHAR, next_server, PP_RSV_TAG, MY_SIDE_COMM);
+
 		}
 		else
 		{
@@ -174,7 +187,6 @@ using namespace std;
 			int req_size = rsvHandler.serializer(rq_buf);
 			printf("element found sending back--->%d\n",rsvHandler.rq_rank);
 			rsvHandler.print();
-			// MPI_Send(&resp,1,MPI_INT, rsvHandler.rq_rank, PP_RSV_TAG, lindaSpace.RQ_COMM);
 			MPI_Send(rq_buf, req_size, MPI_CHAR, rsvHandler.rq_rank, PP_RSV_TAG, INTER_COMM);
 		}
 	}

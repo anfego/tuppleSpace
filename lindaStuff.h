@@ -20,6 +20,7 @@
 #define PP_WILDCARD_TYPE	0
 #define PP_DATA_NO_FOUND	0
 #define PP_DATA_RESERVED	1
+
 using namespace std;
 
 class lindaStuff
@@ -38,6 +39,7 @@ private:
 	vector<node> myNodes;
 	void printData(int);
 	void printAllData();
+	int numRsv;
 	
 
 public:
