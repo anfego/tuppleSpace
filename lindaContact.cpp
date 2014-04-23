@@ -9,8 +9,7 @@ LindaContact::LindaContact()
 	rq_rank = 0;
 	data_id = 0;
 	size = 0;
-	LindaContact:: addWorkType(0);
-	LindaContact:: addServer(0);
+	used = 0
 }
 LindaContact::LindaContact(char * serial)
 {
@@ -25,6 +24,7 @@ LindaContact::LindaContact(int myRank,int dataID, int size_of_work, int type_of_
 	location_rank = -1;
 	LindaContact::addWorkType(type_of_work);
 	LindaContact::addServer(server);
+	used = 1; 
 	
 }
 
