@@ -36,6 +36,7 @@ private:
 		int id;
 	};
 	int key;
+	LindaContact lindaHandle[PP_HANDLE_SIZE];
 	vector<node> myNodes;
 	void printData(int);
 	void printAllData();
@@ -71,7 +72,7 @@ public:
 	int 	get_comm_linda(MPI_Comm *comm_in);
 	int 	am_i_server();
 	void 	set_as_server();
-	int 	allocate(int size, int type);
+	int 	allocate(LindaContact & putHandler);
 	void 	store(void *work_unit_buf, int &index);
 	bool 	reserver(LindaContact & rsvHandler);
 	void 	reserver(int reserve_buf[], int handle[]);

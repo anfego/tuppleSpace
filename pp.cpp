@@ -131,6 +131,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 	{
 		// checks if there is a "to finish"
 		msg_other_side = 0;
+		msg_my_side = 0;
 		MPI_Iprobe(lindaSpace.other_side_leader, PP_FINALIZE_TAG, lindaSpace.INTER_COMM, &msg_other_side, &status);
 		if (msg_other_side == 1)		// if true there is a message, PP_Finalize
 		{
@@ -151,7 +152,7 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 			// if(type_rec == good rec) - receive
 			// resp is index in vector, never can be less than zero
 			/*int allocate(int &size, int &type)*/
-			resp = lindaSpace.allocate(putHandler.size, putHandler.types[0] );
+			resp = lindaSpace.allocate(putHandler);
 
 			MPI_Send(&resp,1, MPI_INT, putHandler.rq_rank, PP_PUT_TAG, lindaSpace.INTER_COMM);
 			//get the datapp
@@ -170,12 +171,15 @@ int PP_Init(int num_user_types, int * user_types, int am_server_flag)
 		MPI_Iprobe(MPI_ANY_SOURCE, PP_RSV_TAG, lindaSpace.MY_SIDE_COMM, &msg_my_side, &status);
 		if( msg_other_side == 1)//received reserve
 		{
+			printf("PP_Reserve: New Reserve\n");
 			lindaSpace.rsvRequest(lindaSpace.INTER_COMM);
 		}else if (msg_my_side == 1)
 		{
+			printf("Reserve: Other Server\n");
 			lindaSpace.rsvRequest(lindaSpace.MY_SIDE_COMM);
 		}
 		msg_other_side = 0;
+		msg_my_side = 0;
 		MPI_Iprobe(MPI_ANY_SOURCE, PP_GET_TAG, lindaSpace.INTER_COMM, &msg_other_side, &status);
 		if( msg_other_side == 1)//received get
 		{
@@ -255,7 +259,7 @@ int PP_Put(void * buffer, int size, int type, int target)
 	memset(reqHandler_str,'\0',HANDLER_SIZE*sizeof(char));
 	int req_size = reqHandler.serializer(reqHandler_str);
 	// reqHandler.print();
-	// printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
+	printf("buff out %s\t size: %d \n", reqHandler_str,req_size);
 	MPI_Send(reqHandler_str,req_size,MPI_CHAR, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM);
 	
 	MPI_Recv(&pp_error, 1, MPI_INT, picked_server, PP_PUT_TAG, lindaSpace.INTER_COMM, &status);

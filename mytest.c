@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
 
 
 #include "/nfshome/rbutler/public/courses/pp6430/mpich3i/include/mpi.h"
@@ -109,8 +110,25 @@ int main(int argc, char *argv[])
                     }
                     dbgprintf(1,"all work submitted after %f secs\n",MPI_Wtime()-start_job_time);
                 }
-                int temp = 3;
-                rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);
+                int temp = WORK;
+                if(my_world_rank == MASTER_RANK)
+                {   
+                    printf("Reserving WORK !!! !\n"); 
+                    rc = PP_Put( work_unit_buf, work_unit_size, WORK, -1); 
+                    sleep(2);
+                }
+                else
+                {
+                    memset(work_unit_buf,'X',work_unit_size);
+                    sleep(2);
+                    rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);
+                    // sleep(1);
+                    printf("Putting WORK !!! !\n"); 
+                    
+                    // temp = 0;
+                    // rc = PP_Reserve(1,&temp,&work_len,&work_type,work_handle);
+                    // sleep(3);
+                }
                 if ( rc == PP_EXHAUSTION )
                 {
                     dbgprintf( 1, "done by exhaustion\n" );

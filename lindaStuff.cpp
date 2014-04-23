@@ -55,16 +55,17 @@ using namespace std;
 		server = 1;
 	}
 
-	int lindaStuff::allocate(int size, int type)
+	int lindaStuff::allocate(LindaContact & putHandler)
 	{
 		node tempNode;
 		// Allocates size +1 to ensure NULL ended
-		tempNode.memory = (char *)malloc((size+1)*sizeof(char));
+		tempNode.memory = (char *)malloc((putHandler.size+1)*sizeof(char));
 		if (tempNode.memory != NULL)//if no space
 		{
-			memset(tempNode.memory,'\0',(size+1)*sizeof(char));
-			tempNode.type = type;
-			tempNode.size = size;
+			memset(tempNode.memory,'\0',(putHandler.size+1)*sizeof(char));
+			tempNode.type = putHandler.types[0];
+			tempNode.size = putHandler.size;
+			tempNode.target = putHandler.target_rank;
 			tempNode.reserved = false;
 			tempNode.id = key++;
 			myNodes.push_back(tempNode);
@@ -85,14 +86,18 @@ using namespace std;
 
 	bool lindaStuff::reserver(LindaContact & rsvHandler)
 	{
-		printf("\tmyNodes size: %d",myNodes.size());
+		printf("\tmyNodes size: %d | %d\n",myNodes.size(),rsvHandler.types.size());
 		for (int i = 0; i < myNodes.size(); ++i)
 		{
+			printf("\t\t i:%d",i);
 			for (int j = 0; j < rsvHandler.types.size(); ++j)
 			{
 				printf("\tquery type: %d agains %d\n", rsvHandler.types[j], myNodes[i].type);
+				printf("\tquery rank: %d agains %d\n", rsvHandler.rq_rank, myNodes[i].target);
 				//TODO: Add target validation
-				if (!myNodes[i].reserved && ( rsvHandler.types[j] == 0 || myNodes[i].type == rsvHandler.types[j]))
+				if (!myNodes[i].reserved && 
+					( rsvHandler.types[j] == 0 || myNodes[i].type == rsvHandler.types[j]) &&
+					(rsvHandler.rq_rank == myNodes[i].target))
 				{
 					printf("reserved\n");
 					myNodes[i].reserved = true;
@@ -129,11 +134,17 @@ using namespace std;
 			printData(i);
 		}
 	}
-	void lindaStuff::rsvRequest(MPI_Comm &RQ_COMM, int other_side_rq)
+	void lindaStuff::rsvRequest(MPI_Comm &RQ_COMM)
 	{
 		char rq_buf[HANDLER_SIZE];
 		memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
 		MPI_Status status;
+		if (RQ_COMM == INTER_COMM)
+		{
+			printf("NUM RQ: %d\n",++numRsv);
+			
+		}
+			
 		
 		MPI_Recv(&rq_buf, HANDLER_SIZE, MPI_CHAR, MPI_ANY_SOURCE, PP_RSV_TAG, RQ_COMM, &status);
 		/*void reserver(int reserve_buf[], int handle[])*/
@@ -171,12 +182,15 @@ using namespace std;
 			// }
 			
 			//go to next server
-			int next_server = (my_side_rank+1)%my_side_size;
-			printf("RSV next server: %d my_side_size %d\n", next_server, my_side_size);
-			// serialize the rq and send it out
-			memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
-			int req_size = rsvHandler.serializer(rq_buf);
-			MPI_Send(rq_buf,req_size,MPI_CHAR, next_server, PP_RSV_TAG, MY_SIDE_COMM);
+			if (my_side_size > 1)
+			{
+				int next_server = (my_side_rank+1)%my_side_size;
+				printf("RSV next server: %d my_side_size %d\n", next_server, my_side_size);
+				// serialize the rq and send it out
+				memset(rq_buf,'\0',HANDLER_SIZE*sizeof(char));
+				int req_size = rsvHandler.serializer(rq_buf);
+				MPI_Send(rq_buf,req_size,MPI_CHAR, next_server, PP_RSV_TAG, MY_SIDE_COMM);
+			}
 
 		}
 		else

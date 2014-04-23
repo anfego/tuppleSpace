@@ -7,7 +7,7 @@
 #include <string.h>
 #include <algorithm>
 
-#define HANDLER_SIZE 100
+#define HANDLER_SIZE 1000
 
 using namespace std; 
 
@@ -44,6 +44,7 @@ public:
 	int target_rank;
 	std::vector<int> types;
 	std::vector<int> rq_servers;
+	int used;
 };
 
 
